@@ -11,6 +11,7 @@
 #define _noreturn __attribute__((noreturn))
 #define _packed __attribute__((packed))
 #define _unused  __attribute__((unused))
+#define _isr __attribute__((interrupt))
 #define asmv(code) __asm__ __volatile__(code)
 #define asmvf(code, ...) __asm__ __volatile(code, __VA_ARGS__)
 
