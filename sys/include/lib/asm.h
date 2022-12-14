@@ -1,3 +1,9 @@
+/*
+ *  Description: ASM related helper functions.
+ *  Author(s): Ian Marco Moffett
+ *
+ */
+
 #ifndef ASM_H_
 #define ASM_H_
 

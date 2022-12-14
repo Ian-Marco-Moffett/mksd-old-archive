@@ -1,3 +1,10 @@
+/*
+ *  Description: Interrupt descriptor table.
+ *  Author(s): Ian Marco Moffett
+ *
+ */
+
+
 #include <arch/x64/idt.h>
 
 #define TRAP_GATE_FLAGS 0x8F
