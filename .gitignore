@@ -8,7 +8,6 @@ limine/
 autom4te.cache/
 config.log
 config.status
-/Makefile
 configure
 install-sh
 meta/system/init.sys
