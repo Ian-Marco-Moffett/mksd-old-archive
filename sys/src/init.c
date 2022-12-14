@@ -9,7 +9,7 @@
 #include <lib/limine.h>
 #include <lib/asm.h>
 
-_noreturn int main(void) {
+_noreturn int _start(void) {
   asmv("cli; hlt");
   __builtin_unreachable();
 }
