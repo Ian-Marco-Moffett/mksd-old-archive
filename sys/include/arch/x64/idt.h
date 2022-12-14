@@ -23,7 +23,10 @@ typedef struct {
 typedef struct {
   uint16_t limit;
   uint64_t base;
-} idtr_t;
+} _packed idtr_t;
+
+void register_exception_handler(uint8_t vector, void(*isr)(void* stackframe));
+void load_idt(void);
 
 #endif    // __x86_64__
 #endif    // IDT_H_
