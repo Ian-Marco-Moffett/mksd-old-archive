@@ -6,6 +6,7 @@
 
 #if defined(__x86_64__)
 void memzero(void* ptr, size_t n);
+void memset(void* ptr, uint8_t byte, size_t n);
 void memcpy(void* dst, void* src, size_t n);
 char* dec2str(size_t number);
 char* hex2str(uint64_t hex_num);

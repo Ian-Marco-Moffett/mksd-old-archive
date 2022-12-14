@@ -103,6 +103,15 @@ void memzero(void* ptr, size_t n) {
 }
 
 
+void memset(void* ptr, uint8_t byte, size_t n) {
+  asmvf(
+      "cld\n"
+      "rep\n"
+      "stosb\n"
+      :: "a" (byte), "D" (ptr), "c" (n));
+}
+
+
 void memcpy(void* dst, void* src, size_t n) {
   asmvf(
       "cld\n"
