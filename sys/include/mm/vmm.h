@@ -21,5 +21,7 @@ typedef uintptr_t paddr_t;
 #define PTE_NX (1ULL << 63)
 #define PTE_GET_ADDR(VALUE) 
 
+void vmm_map_page(pagemap_t top_level, vaddr_t vaddr, paddr_t paddr, uint64_t flags);
+
 #endif // __x86_64__
 #endif // VMM_H_
