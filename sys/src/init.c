@@ -1,5 +1,5 @@
 /*
- *  Description: Mkall kernel entrypoint.
+ *  Description: MKSD kernel entrypoint.
  *  Author(s): Ian Marco Moffett
  *
  *
@@ -15,7 +15,7 @@
 #include <arch/x64/exceptions.h>
 #include <arch/x64/idt.h>
 #else
-#error MkallOS only supports x86_64 for now
+#error MKSD only supports x86_64 for now
 #endif
 
 

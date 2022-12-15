@@ -1,5 +1,5 @@
 /*
- *  Description: Mkall physical memory manager.
+ *  Description: MKSD physical memory manager.
  *  Author(s): Ian Marco Moffett
  *
  *

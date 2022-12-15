@@ -1,5 +1,5 @@
 /*
- *  Description: Mkall virtual memory manager.
+ *  Description: MKSD virtual memory manager.
  *  Author(s): Ian Marco Moffett
  *
  *
