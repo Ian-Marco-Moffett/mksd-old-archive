@@ -28,4 +28,6 @@ typedef uint8_t bool;
 typedef uint32_t wchar_t;
 typedef size_t off_t;
 
+#define __off_t_defined 1
+
 #endif
