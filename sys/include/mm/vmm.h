@@ -19,9 +19,14 @@ typedef uintptr_t paddr_t;
 #define PTE_WRITABLE (1ull << 1)
 #define PTE_USER (1ULL << 2)
 #define PTE_NX (1ULL << 63)
-#define PTE_GET_ADDR(VALUE) 
+#define PTE_GET_ADDR(VALUE) ((VALUE) & PTE_ADDR_MASK)
+#define PAGE_SIZE 4096
 
 void vmm_map_page(pagemap_t top_level, vaddr_t vaddr, paddr_t paddr, uint64_t flags);
+void vmm_umap_page(pagemap_t top_level, vaddr_t vaddr);
+paddr_t vmm_get_phys(pagemap_t top_level, vaddr_t vaddr);
+void* vmm_alloc(size_t page_count);
+pagemap_t vmm_get_cr3_val(void);
 
 #endif // __x86_64__
 #endif // VMM_H_
