@@ -121,5 +121,33 @@ void memcpy(void* dst, void* src, size_t n) {
     );
 }
 
+uint8_t strcmp(const char* str1, const char* str2) {
+    uint32_t str1_len, str2_len;
+    str1_len = strlen(str1);
+    str2_len = strlen(str2);
+
+    if (str1_len != str2_len) {
+        return 1;
+    }
+
+    for (uint32_t i = 0; i < str1_len; ++i) {
+        if (str1[i] != str2[i]) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+uint8_t memcmp(const char* str1, const char* str2, size_t n) {
+  for (size_t i = 0; i < n; ++i) {
+    if (str1[i] != str2[i]) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 
 #endif
