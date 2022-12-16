@@ -48,8 +48,8 @@ static uint8_t do_checksum(const acpi_header_t* header) {
   return sum % 0x100 == 0;
 }
 
-static void parse_dsdt_s5(uintptr_t dsdt) {
-  char* s5 = (char*)dsdt + 36;      // Skip the header.
+static void parse_dsdt_s5(void) {
+  char* s5 = (char*)(uint64_t)fadt->dsdt + 36;      // Skip the header.
   size_t dsdt_length = *((uint32_t*)(uint64_t)fadt->dsdt+1)-36;
 
   while (dsdt_length > 0) {
@@ -97,7 +97,7 @@ void acpi_power_off(void) {
   outw((uint32_t)fadt->pm1a_control_block, SLP_TYPa | SLP_EN);
 
   if (fadt->pm1b_control_block != 0) {
-    outw(fadt->pm1a_control_block, SLP_TYPb | SLP_EN);
+    outw(fadt->pm1b_control_block, SLP_TYPb | SLP_EN);
   }
 
   printk(PRINTK_WARN 
@@ -134,6 +134,6 @@ void acpi_init(void) {
   printk(PRINTK_INFO "ACPI: FADT located at %x\n", fadt);
   printk(PRINTK_INFO "ACPI: ACPI DSDT location %x\n", fadt->dsdt);
 
-  parse_dsdt_s5(fadt->dsdt);
+  parse_dsdt_s5();
 }
 
