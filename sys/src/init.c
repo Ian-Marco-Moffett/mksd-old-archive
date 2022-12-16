@@ -10,6 +10,7 @@
 #include <lib/asm.h>
 #include <lib/log.h>
 #include <mm/pmm.h>
+#include <acpi/acpi.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -33,6 +34,7 @@ _noreturn int _start(void) {
   init_mm();
 #endif
   
+  acpi_init();
   asmv("cli; hlt");
   __builtin_unreachable();
 }
