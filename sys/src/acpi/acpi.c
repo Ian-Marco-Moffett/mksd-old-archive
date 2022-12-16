@@ -112,17 +112,16 @@ void acpi_init(void) {
   
   /* Get the entry count */
   rsdt_entry_count = (rsdt->header.length - sizeof(rsdt->header)) / 4;
-  printk(PRINTK_INFO "ACPI: RSDT contains %d entries.\n", rsdt_entry_count);
+  printk(PRINTK_INFO "ACPI: RSDT contains %d entries.\n", 
+         rsdt_entry_count);
 
   /* Locate FADT */
   printk(PRINTK_INFO "ACPI: Locating ACPI FADT..\n");
   locate_fadt();
 
-  ASSERT(fadt != NULL, 
-         "Could not locate ACPI FADT!\n");
+  ASSERT(fadt != NULL, "Could not locate ACPI FADT!\n");
 
-  ASSERT(do_checksum(&fadt->header), 
-         "ACPI FADT checksum invalid!\n");
+  ASSERT(do_checksum(&fadt->header), "ACPI FADT checksum invalid!\n");
 
   printk(PRINTK_INFO "ACPI: FADT located at %x\n", fadt);
   printk(PRINTK_INFO "ACPI: ACPI DSDT location %x\n", fadt->dsdt);
