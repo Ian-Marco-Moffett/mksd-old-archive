@@ -10,6 +10,7 @@
 #include <lib/assert.h>
 #include <lib/limine.h>
 #include <lib/string.h>
+#include <lib/asm.h>
 #include <arch/x64/io.h>
 
 static acpi_rsdt_t* rsdt = NULL;
@@ -98,6 +99,13 @@ void acpi_power_off(void) {
   if (fadt->pm1b_control_block != 0) {
     outw(fadt->pm1a_control_block, SLP_TYPb | SLP_EN);
   }
+
+  printk(PRINTK_WARN 
+         "ACPI: Automatic shutdown failed!\n"
+         "It is safe to manually turn off "
+         "your computer now.");
+
+  asmv("cli; hlt");
 }
 
 void acpi_init(void) {
@@ -126,6 +134,6 @@ void acpi_init(void) {
   printk(PRINTK_INFO "ACPI: FADT located at %x\n", fadt);
   printk(PRINTK_INFO "ACPI: ACPI DSDT location %x\n", fadt->dsdt);
 
-  parse_dsdt_s5(fadt->dsdt); 
+  parse_dsdt_s5(fadt->dsdt);
 }
 
