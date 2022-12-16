@@ -7,6 +7,7 @@
 
 
 void* kmalloc(size_t n_bytes);
+void* krealloc(void* old, size_t new_size);
 void kfree(void* ptr);
 
 

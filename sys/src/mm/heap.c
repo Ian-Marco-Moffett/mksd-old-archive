@@ -1,6 +1,7 @@
 #include <mm/heap.h>
 #include <mm/mmap.h>
 #include <mm/vmm.h>
+#include <lib/string.h>
 
 #define HEAP_MAG 0xCA7F00D
 
@@ -62,6 +63,14 @@ void kfree(void* ptr) {
   }
 
   bytes_allocated -= hdr->msize_bytes;
+}
+
+
+void* krealloc(void* old, size_t new_size) {
+  void* new = kmalloc(new_size);
+  memcpy(new, old, new_size);
+  kfree(old);
+  return new;
 }
 
 #endif
