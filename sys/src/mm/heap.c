@@ -18,7 +18,12 @@ static size_t bytes_allocated = 0;
 
 #if defined(__x86_64__)
 static void heap_init(void) {
-  heap_start = k_mmap(NULL, HEAP_SIZE_PAGES, PROT_READ | PROT_WRITE | PROT_EXEC, 0);
+  heap_start = k_mmap(NULL, 
+                      HEAP_SIZE_PAGES, 
+                      PROT_READ 
+                      | PROT_WRITE 
+                      | PROT_EXEC, 0);
+
   free_ptr = heap_start;
 }
 
