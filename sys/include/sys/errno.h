@@ -12,5 +12,8 @@
 #define EBADMSG      8         /* Bad message */
 #define EBUSY        9         /* Device or resource busy */
 #define EPERM        10        /* Operation not permitted */
+#define EROFS        11        /* Read-only filesystem */
+#define EPIPE        12        /* Broken pipe */
+#define ENOENT       13        /* No such file or directory */
 
 #endif
