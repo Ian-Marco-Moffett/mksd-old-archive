@@ -57,7 +57,7 @@ uint32_t hashmap_hash(const void* data, size_t length);
 
 #define HASHMAP_SGET(HASHMAP, RET, STRING) ({ \
     const char *HASHMAP_SGET_string = (STRING); \
-    HASHMAP_GET(HASHMAP, RET, HASHMAP_SGET_string, kstrlen(HASHMAP_SGET_string)); \
+    HASHMAP_GET(HASHMAP, RET, HASHMAP_SGET_string, strlen(HASHMAP_SGET_string)); \
 })
 
 #define HASHMAP_INSERT(HASHMAP, KEY_DATA, KEY_LENGTH, ITEM) do { \
@@ -90,7 +90,7 @@ uint32_t hashmap_hash(const void* data, size_t length);
     \
     __auto_type HASHMAP_INSERT_item = &HASHMAP_INSERT_bucket->items[HASHMAP_INSERT_bucket->filled]; \
     \
-    kmemcpy(HASHMAP_INSERT_item->key_data, HASHMAP_INSERT_key_data, HASHMAP_INSERT_key_length); \
+    memcpy(HASHMAP_INSERT_item->key_data, (char*)HASHMAP_INSERT_key_data, HASHMAP_INSERT_key_length); \
     HASHMAP_INSERT_item->key_length = HASHMAP_INSERT_key_length; \
     HASHMAP_INSERT_item->item = ITEM; \
     \
@@ -99,7 +99,7 @@ uint32_t hashmap_hash(const void* data, size_t length);
 
 #define HASHMAP_SINSERT(HASHMAP, STRING, ITEM) do { \
     const char *HASHMAP_SINSERT_string = (STRING); \
-    HASHMAP_INSERT(HASHMAP, HASHMAP_SINSERT_string, kstrlen(HASHMAP_SINSERT_string), ITEM); \
+    HASHMAP_INSERT(HASHMAP, HASHMAP_SINSERT_string, strlen(HASHMAP_SINSERT_string), ITEM); \
 } while (0)
 
 #endif
