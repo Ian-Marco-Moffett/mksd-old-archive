@@ -38,7 +38,8 @@ void* kmalloc(size_t n_bytes) {
   }
 
   free_ptr->msize_bytes = n_bytes;
-  void* next = (void*)((uintptr_t)free_ptr + (sizeof(heap_header_t) + n_bytes));
+  void* next = 
+    (void*)((uintptr_t)free_ptr + (sizeof(heap_header_t) + n_bytes));
 
   free_ptr->magic = HEAP_MAG;
   free_ptr->next = next;
@@ -49,7 +50,9 @@ void* kmalloc(size_t n_bytes) {
 }
 
 void kfree(void* ptr) {
-  heap_header_t* hdr = (heap_header_t*)((uintptr_t)ptr - sizeof(heap_header_t));
+  heap_header_t* hdr = 
+    (heap_header_t*)((uintptr_t)ptr - sizeof(heap_header_t));
+
   if (hdr->prev) {
       hdr->prev->next = hdr->next;
   }
