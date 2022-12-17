@@ -147,5 +147,7 @@ void
 pci_enable_bus_mastering(pci_device_t* dev)
 {
   uint16_t val = pci_config_readw(dev->bus, dev->slot, dev->func, 0x4);
-  pci_config_writew(dev->bus, dev->slot, dev->func, 0x4, (val | (1 << 2) | (1 << 0)));
+  pci_config_writew(dev->bus, dev->slot, dev->func, 0x4, (val 
+                                                          | (1 << 2) 
+                                                          | (1 << 0)));
 }
