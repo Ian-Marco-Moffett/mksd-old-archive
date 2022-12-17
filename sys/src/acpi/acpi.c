@@ -27,10 +27,14 @@ static volatile struct limine_rsdp_request rsdp_req = {
 };
 
 
-static void locate_fadt(void) {
-  for (size_t i = 0; i < rsdt_entry_count; ++i) {
+static void 
+locate_fadt(void) 
+{
+  for (size_t i = 0; i < rsdt_entry_count; ++i) 
+  {
     acpi_header_t* current = (acpi_header_t*)(uint64_t)rsdt->tables[i];
-    if (memcmp(current->signature, "FACP", 4) == 0) {
+    if (memcmp(current->signature, "FACP", 4) == 0) 
+    {
       fadt = (acpi_fadt_t*)current;
       return;
     }
@@ -38,37 +42,47 @@ static void locate_fadt(void) {
 }
 
 
-static uint8_t do_checksum(const acpi_header_t* header) {
+static uint8_t 
+do_checksum(const acpi_header_t* header) 
+{
   uint8_t sum = 0;
 
-  for (uint32_t i = 0; i < header->length; ++i) {
+  for (uint32_t i = 0; i < header->length; ++i) 
+  {
     sum += ((char*)header)[i];
   }
 
   return sum % 0x100 == 0;
 }
 
-static void parse_dsdt_s5(void) {
+static void 
+parse_dsdt_s5(void) 
+{
   char* s5 = (char*)(uint64_t)fadt->dsdt + 36;      // Skip the header.
   size_t dsdt_length = *((uint32_t*)(uint64_t)fadt->dsdt+1)-36;
 
-  while (dsdt_length > 0) {
-    if (memcmp(s5, "_S5_", 4) == 0) {
+  while (dsdt_length > 0) 
+  {
+    if (memcmp(s5, "_S5_", 4) == 0) 
+    {
       break;
     }
 
     ++s5;
   }
 
-  if (dsdt_length > 0) {
+  if (dsdt_length > 0) 
+  {
     if ((*(s5-1) == 0x08 || 
         (*(s5-2) == 0x08 && 
-         *(s5-1) == '\\')) && *(s5+4) == 0x12) {
+         *(s5-1) == '\\')) && *(s5+4) == 0x12) 
+    {
       printk(PRINTK_INFO "ACPI: Found \\_S5 at %x\n", s5);
       s5 += 5;
       s5 += ((*s5 & 0xC0) >> 16) + 2;     /* Calculate package length */
 
-      if (*(s5) == 0xA) {
+      if (*(s5) == 0xA) 
+      {
         // Skip the byte prefix.
         ++s5;
       }
@@ -76,7 +90,8 @@ static void parse_dsdt_s5(void) {
       SLP_TYPa = *(s5) << 10;
       ++s5;
 
-      if (*(s5) == 0xA) {
+      if (*(s5) == 0xA) 
+      {
         // Skip the byte prefix again.
         ++s5;
       }
@@ -85,18 +100,25 @@ static void parse_dsdt_s5(void) {
       SLP_EN = 1 << 13;
       SCI_EN = 1;
 
-    } else {
+    } 
+    else 
+    {
       printk(PRINTK_WARN "ACPI: Failed to parse \\_S5.\n");
     }
-  } else {
+  } 
+  else 
+  {
     printk(PRINTK_WARN "ACPI: \\_S5 not present!!\n");
   }
 }
 
-void acpi_power_off(void) {
+void 
+acpi_power_off(void) 
+{
   outw((uint32_t)fadt->pm1a_control_block, SLP_TYPa | SLP_EN);
 
-  if (fadt->pm1b_control_block != 0) {
+  if (fadt->pm1b_control_block != 0) 
+  {
     outw(fadt->pm1b_control_block, SLP_TYPb | SLP_EN);
   }
 
@@ -108,7 +130,9 @@ void acpi_power_off(void) {
   asmv("cli; hlt");
 }
 
-void acpi_init(void) {
+void 
+acpi_init(void) 
+{
   printk(PRINTK_INFO "ACPI: Setting up..\n");
   
   /* Fetch the RSDP */

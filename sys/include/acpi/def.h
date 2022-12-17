@@ -5,7 +5,8 @@
 #include <lib/asm.h>
 
 
-typedef struct {
+typedef struct 
+{
     char signature[8];
     uint8_t checksum;
     char OEMID[6];
@@ -14,7 +15,8 @@ typedef struct {
 } _packed acpi_rsdp_t;
 
 
-typedef struct {
+typedef struct 
+{
     acpi_rsdp_t rsdp1;
     uint32_t length;
     uint64_t xsdtAddr;
@@ -23,7 +25,8 @@ typedef struct {
 } _packed acpi_rsdp2_t;
 
 
-typedef struct {
+typedef struct 
+{
     char signature[8];
     uint8_t checksum;
     char oem[6];
@@ -35,7 +38,8 @@ typedef struct {
 } _packed acpi_xsdp_t;
 
 
-typedef struct {
+typedef struct 
+{
     char signature[4];
     uint32_t length;
     uint8_t revision;
@@ -48,19 +52,22 @@ typedef struct {
 } _packed acpi_header_t;
 
 
-typedef struct {
+typedef struct 
+{
     acpi_header_t header;
     uint32_t tables[];
 } _packed acpi_rsdt_t;
 
 
-typedef struct {
+typedef struct 
+{
     acpi_header_t header;
     uint64_t tables[];
 } _packed acpi_xsdt_t;
 
 
-typedef struct {
+typedef struct 
+{
     uint8_t address_space;
     uint8_t bit_width;
     uint8_t bit_offset;
@@ -69,7 +76,8 @@ typedef struct {
 } _packed acpi_gas_t;
 
 
-typedef struct {
+typedef struct 
+{
     acpi_header_t header;
     uint32_t firmware_control;
     uint32_t dsdt; // pointer to dsdt
@@ -135,18 +143,21 @@ typedef struct {
 } _packed acpi_fadt_t;
 
 
-typedef struct {
+typedef struct 
+{
     acpi_header_t header;
     uint32_t lapic_addr;
     uint32_t flags;
 } _packed acpi_madt_t;
 
-typedef struct {
+typedef struct 
+{
     uint8_t type;
     uint8_t length;
 } _packed apic_header_t;
 
-typedef struct {
+typedef struct 
+{
     apic_header_t header;
     uint8_t processor_id;
     uint8_t apic_id;
@@ -154,7 +165,8 @@ typedef struct {
 } _packed local_apic_t;
 
 
-typedef struct {
+typedef struct 
+{
     apic_header_t header;
     uint8_t io_apic_id;
     uint8_t reserved;
@@ -162,7 +174,8 @@ typedef struct {
     uint32_t global_system_interrupt_base;
 } _packed io_apic_t;
 
-typedef struct {
+typedef struct 
+{
     apic_header_t header;
     uint8_t bus;
     uint8_t source;					// IRQ.

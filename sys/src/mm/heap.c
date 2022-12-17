@@ -5,7 +5,8 @@
 
 #define HEAP_MAG 0xCA7F00D
 
-typedef struct HeapHeader {
+typedef struct HeapHeader 
+{
   uint32_t magic;
   size_t msize_bytes;
   struct HeapHeader* next;
@@ -18,7 +19,9 @@ static heap_header_t* free_ptr = NULL;
 static size_t bytes_allocated = 0;
 
 #if defined(__x86_64__)
-static void heap_init(void) {
+static void 
+heap_init(void) 
+{
   heap_start = k_mmap(NULL, 
                       HEAP_SIZE_PAGES, 
                       PROT_READ 
@@ -29,12 +32,16 @@ static void heap_init(void) {
 }
 
 
-void* kmalloc(size_t n_bytes) {
-  if (heap_start == NULL) {
+void* 
+kmalloc(size_t n_bytes) 
+{
+  if (heap_start == NULL) 
+  {
     heap_init();
   }
 
-  if (bytes_allocated + n_bytes > HEAP_SIZE_PAGES*PAGE_SIZE) {
+  if (bytes_allocated + n_bytes > HEAP_SIZE_PAGES*PAGE_SIZE) 
+  {
     return NULL;
   }
 
@@ -50,15 +57,19 @@ void* kmalloc(size_t n_bytes) {
   return (void*)((uintptr_t)next - n_bytes);
 }
 
-void kfree(void* ptr) {
+void 
+kfree(void* ptr) 
+{
   heap_header_t* hdr = 
     (heap_header_t*)((uintptr_t)ptr - sizeof(heap_header_t));
 
-  if (hdr->prev) {
+  if (hdr->prev) 
+  {
       hdr->prev->next = hdr->next;
   }
 
-  if (hdr->next) {
+  if (hdr->next) 
+  {
     hdr->next->prev = hdr->prev;
   }
 
@@ -66,7 +77,9 @@ void kfree(void* ptr) {
 }
 
 
-void* krealloc(void* old, size_t new_size) {
+void* 
+krealloc(void* old, size_t new_size) 
+{
   void* new = kmalloc(new_size);
   memcpy(new, old, new_size);
   kfree(old);

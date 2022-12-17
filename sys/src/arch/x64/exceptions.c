@@ -8,7 +8,9 @@
 #include <arch/x64/idt.h>
 #include <lib/log.h>
 
-_isr static void vec_0x0(void* stackframe) {
+_isr static void 
+vec_0x0(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Division by zero\n");
@@ -16,7 +18,9 @@ _isr static void vec_0x0(void* stackframe) {
 }
 
 
-_isr static void vec_0x1(void* stackframe) {
+_isr static void 
+vec_0x1(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Debug exception\n");
@@ -24,7 +28,9 @@ _isr static void vec_0x1(void* stackframe) {
 }
 
 
-_isr static void vec_0x3(void* stackframe) {
+_isr static void 
+vec_0x3(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Breakpoint exception\n");
@@ -32,7 +38,9 @@ _isr static void vec_0x3(void* stackframe) {
 }
 
 
-_isr static void vec_0x4(void* stackframe) {
+_isr static void 
+vec_0x4(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Overflow exception\n");
@@ -40,14 +48,18 @@ _isr static void vec_0x4(void* stackframe) {
 }
 
 
-_isr static void vec_0x5(void* stackframe) {
+_isr static void 
+vec_0x5(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "BOUND range exceeded\n");
   asmv("cli; hlt");
 }
 
-_isr static void vec_0x6(void* stackframe) {
+_isr static void 
+vec_0x6(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Invalid opcode\n");
@@ -55,7 +67,9 @@ _isr static void vec_0x6(void* stackframe) {
 }
 
 
-_isr static void vec_0x8(void* stackframe) {
+_isr static void 
+vec_0x8(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Double fault\n");
@@ -63,7 +77,9 @@ _isr static void vec_0x8(void* stackframe) {
 }
 
 
-_isr static void vec_0xA(void* stackframe) {
+_isr static void 
+vec_0xA(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Invalid TSS\n");
@@ -71,14 +87,18 @@ _isr static void vec_0xA(void* stackframe) {
 }
 
 
-_isr static void vec_0xB(void* stackframe) {
+_isr static void 
+vec_0xB(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Segment not present\n");
   asmv("cli; hlt");
 }
 
-_isr static void vec_0xC(void* stackframe) {
+_isr static void 
+vec_0xC(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Stack segment fault\n");
@@ -86,7 +106,9 @@ _isr static void vec_0xC(void* stackframe) {
 }
 
 
-_isr static void vec_0xD(void* stackframe) {
+_isr static void 
+vec_0xD(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "General protection fault\n");
@@ -94,14 +116,18 @@ _isr static void vec_0xD(void* stackframe) {
 }
 
 
-_isr static void vec_0xE(void* stackframe) {
+_isr static void 
+vec_0xE(void* stackframe) 
+{
   asmv("cli");
   printk(PRINTK_KPANIC_START);
   printk(PRINTK_KPANIC "Page fault\n");
   asmv("cli; hlt");
 }
 
-void init_exceptions(void) {
+void 
+init_exceptions(void) 
+{
   register_exception_handler(0x0, vec_0x0);
   register_exception_handler(0x1, vec_0x1);
   register_exception_handler(0x3, vec_0x3);

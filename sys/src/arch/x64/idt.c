@@ -19,7 +19,9 @@ static idtr_t idtr = {
 };
 
 
-static void set_desc(uint8_t vector, void(*isr)(void* stackframe), uint8_t flags) {
+static void 
+set_desc(uint8_t vector, void(*isr)(void* stackframe), uint8_t flags) 
+{
   uintptr_t addr = (uintptr_t)isr;
   idt_gate_desc_t* vec = &idt[vector];
   vec->isr_low16 = addr & 0xFFFF;
@@ -34,11 +36,15 @@ static void set_desc(uint8_t vector, void(*isr)(void* stackframe), uint8_t flags
   vec->p = 1;
 }
 
-void register_exception_handler(uint8_t vector, void(*isr)(void* stackframe)) {
+void 
+register_exception_handler(uint8_t vector, void(*isr)(void* stackframe)) 
+{
   set_desc(vector, isr, TRAP_GATE_FLAGS);
 }
 
-void load_idt(void) {
+void 
+load_idt(void) 
+{
   asmv("lidt %0" :: "m" (idtr));
 }
 

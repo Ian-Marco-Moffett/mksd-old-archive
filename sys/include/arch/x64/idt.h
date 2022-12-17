@@ -5,7 +5,8 @@
 #include <lib/types.h>
 
 #if defined(__x86_64__)
-typedef struct {
+typedef struct 
+{
   uint16_t isr_low16;
   uint16_t cs;
   uint8_t ist   : 2;
@@ -20,7 +21,8 @@ typedef struct {
 } idt_gate_desc_t;
 
 /* Points to the IDT */
-typedef struct {
+typedef struct 
+{
   uint16_t limit;
   uint64_t base;
 } _packed idtr_t;

@@ -5,18 +5,21 @@
 
 
 /* Hashtable iterator */
-typedef struct {
+typedef struct 
+{
   const char* key;
   void* value;
 } hashmap_iter_t;
 
 
-typedef struct {
+typedef struct 
+{
   VECTOR_TYPE(hashmap_iter_t*) iters;
   uint8_t used : 1;
 } hashmap_entry_t;
 
-typedef struct {
+typedef struct 
+{
   VECTOR_TYPE(hashmap_entry_t*) entries;
 } hashmap_t;
 

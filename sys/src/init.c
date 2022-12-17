@@ -20,12 +20,16 @@
 #endif
 
 
-static void init_mm(void) {
+static void 
+init_mm(void) 
+{
   pmm_init();
 }
 
 
-_noreturn int _start(void) {
+_noreturn int 
+_start(void) 
+{
   printk(PRINTK_INFO "Booting..\n");
 
 #if defined(__x86_64__)

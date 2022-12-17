@@ -21,30 +21,42 @@ static struct limine_memmap_response* mmap_resp = NULL;
 static uint8_t* bitmap = NULL;
 
 #if defined(__x86_64__)
-static inline void bitmap_set_bit(size_t bit) {
+static inline void 
+bitmap_set_bit(size_t bit)
+{
   bitmap[bit / 8] |= (1 << (bit % 8));
 }
 
-static inline void bitmap_unset_bit(size_t bit) {
+static inline void 
+bitmap_unset_bit(size_t bit)
+{
   bitmap[bit / 8] &= ~(1 << (bit % 8));
 }
 
 
-static inline uint8_t bitmap_test(size_t bit) {
+static inline uint8_t 
+bitmap_test(size_t bit)
+{
   return bitmap[bit / 8] & (1 << (bit % 8));
 }
 
 
-static struct limine_memmap_entry* find_highest_mem_chunk(void) {
+static struct 
+limine_memmap_entry* find_highest_mem_chunk(void)
+{
   struct limine_memmap_entry* chunk = NULL;
 
-  for (size_t i = 0; i < mmap_resp->entry_count; ++i) {
+  for (size_t i = 0; i < mmap_resp->entry_count; ++i)
+  {
     struct limine_memmap_entry* entry = mmap_resp->entries[i];
     if (entry->type != LIMINE_MEMMAP_USABLE) continue;
 
-    if (chunk == NULL) {
+    if (chunk == NULL) 
+    {
       chunk = entry;
-    } else if (entry->base > chunk->base) {
+    } 
+    else if (entry->base > chunk->base) 
+    {
       chunk = entry;
     }
   }
@@ -52,23 +64,29 @@ static struct limine_memmap_entry* find_highest_mem_chunk(void) {
   return chunk;
 }
 
-static inline size_t get_bitmap_size(void) {
+static inline size_t 
+get_bitmap_size(void) 
+{
   struct limine_memmap_entry* highest_entry = find_highest_mem_chunk();
   size_t highest_address = highest_entry->base + highest_entry->length;
   size_t bitmap_size = ALIGN_UP((highest_address/0x1000)/8, 0x1000);
   return bitmap_size;
 }
 
-static void init_bitmap(void) {
+static void 
+init_bitmap(void) 
+{
   /* Compute the bitmap size */
   printk(PRINTK_INFO "PMM: Computing PMM bitmap size..\n");
   size_t bitmap_size = get_bitmap_size();
   printk(PRINTK_INFO "PMM: Bitmap size => %d bytes\n", bitmap_size);
 
   /* Find a memory chunk for our bitmap */
-  for (size_t i = 0; i < mmap_resp->entry_count; ++i) {
+  for (size_t i = 0; i < mmap_resp->entry_count; ++i) 
+  {
     struct limine_memmap_entry* entry = mmap_resp->entries[i];
-    if (entry->type == LIMINE_MEMMAP_USABLE && entry->length >= bitmap_size) {
+    if (entry->type == LIMINE_MEMMAP_USABLE && entry->length >= bitmap_size) 
+    {
       bitmap = (uint8_t*)(entry->base + VMM_HIGHER_HALF);
       memset(bitmap, 0xFF, bitmap_size);
       entry->length -= bitmap_size;
@@ -80,24 +98,33 @@ static void init_bitmap(void) {
   printk(PRINTK_INFO "PMM: Bitmap location => %x\n", bitmap);
 
   /* Setup bitmap based on memory map */
-  for (size_t i = 0; i < mmap_resp->entry_count; ++i) {
+  for (size_t i = 0; i < mmap_resp->entry_count; ++i) 
+  {
     struct limine_memmap_entry* entry = mmap_resp->entries[i];
-    if (entry->type == LIMINE_MEMMAP_USABLE && entry->length >= bitmap_size) {
-      for (size_t j = 0; j < entry->length; j += 0x1000) {
+    if (entry->type == LIMINE_MEMMAP_USABLE && entry->length >= bitmap_size) 
+    {
+      for (size_t j = 0; j < entry->length; j += 0x1000) 
+      {
         bitmap_unset_bit((entry->base + j)/0x1000);
       }
     }
   }
 }
 
-void pmm_init(void) {
+void 
+pmm_init(void)
+{
   mmap_resp = mmap_req.response;
   init_bitmap();
 }
 
-static uintptr_t pmm_alloc_inner(void) {
-  for (size_t bit = 0; bit < get_bitmap_size()*8; ++bit) {
-    if (!(bitmap_test(bit))) {
+static uintptr_t 
+pmm_alloc_inner(void)
+{
+  for (size_t bit = 0; bit < get_bitmap_size()*8; ++bit) 
+  {
+    if (!(bitmap_test(bit)))
+    {
       bitmap_set_bit(bit);
       return 0x1000*bit;
     }
@@ -106,9 +133,12 @@ static uintptr_t pmm_alloc_inner(void) {
   return 0;
 }
 
-uintptr_t pmm_alloc(size_t frames) {
+uintptr_t 
+pmm_alloc(size_t frames)
+{
   uintptr_t mem = 0;
-  for (size_t i = 0; i < frames; ++i) {
+  for (size_t i = 0; i < frames; ++i)
+  {
     if (mem == 0) mem = pmm_alloc_inner();
     if (mem == 0) return 0;
   }
@@ -117,8 +147,11 @@ uintptr_t pmm_alloc(size_t frames) {
 }
 
 
-void pmm_free(uintptr_t ptr, size_t frames) {
-  for (size_t i = 0; i < frames; ++i) {
+void 
+pmm_free(uintptr_t ptr, size_t frames)
+{
+  for (size_t i = 0; i < frames; ++i)
+  {
     bitmap_unset_bit(ptr/0x1000);
     ptr += 0x1000;
   }
