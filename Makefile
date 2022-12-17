@@ -1,5 +1,5 @@
 QEMU_ARGS = -cpu qemu64 -M q35 -m 3G -cdrom MKSD.iso -boot d -smp 4 -rtc base=localtime -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0
-CFLAGS = -fexceptions -std=gnu11 -ffreestanding -fno-stack-protector   -fno-pic -Werror=implicit -Werror=implicit-function-declaration -Werror=implicit-int   -Werror=int-conversion   -Werror=incompatible-pointer-types -Werror=int-to-pointer-cast -Werror=return-type -Wunused   -mabi=sysv -mno-80387 -mno-mmx   -mno-3dnow -mno-sse -mno-sse2 -mno-red-zone -mcmodel=kernel -pedantic -I sys/include/ -D_KERNEL
+CFLAGS = -fexceptions -std=gnu11 -ffreestanding -fno-stack-protector   -fno-pic -Werror=implicit -Werror=implicit-function-declaration -Werror=implicit-int   -Werror=int-conversion   -Werror=incompatible-pointer-types -Werror=int-to-pointer-cast -Werror=return-type -Wunused   -mabi=sysv -mno-80387 -mno-mmx   -mno-3dnow -mno-sse -mno-sse2 -mno-red-zone -mcmodel=kernel -pedantic -I sys/include/ -D_KERNEL -Wno-pointer-sign
 CC = cross/bin/x86_64-elf-gcc
 LD = cross/bin/x86_64-elf-ld
 OBJDIR = obj
