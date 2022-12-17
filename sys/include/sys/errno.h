@@ -15,5 +15,6 @@
 #define EROFS        11        /* Read-only filesystem */
 #define EPIPE        12        /* Broken pipe */
 #define ENOENT       13        /* No such file or directory */
+#define ENAMETOOLONG 14        /* Filename too long */
 
 #endif
