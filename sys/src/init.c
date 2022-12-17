@@ -11,6 +11,7 @@
 #include <lib/log.h>
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
+#include <fs/vfs.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -39,6 +40,7 @@ _start(void)
 #endif
   
   acpi_init();
+  vfs_init();
   asmv("cli; hlt");
   __builtin_unreachable();
 }
