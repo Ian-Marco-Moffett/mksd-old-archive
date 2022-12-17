@@ -13,7 +13,8 @@
 
 
 static inline uint32_t
-pci_get_cfg_addr(uint32_t bus, uint32_t slot, uint32_t func, uint8_t offset)
+pci_get_cfg_addr(uint32_t bus, uint32_t slot, uint32_t func, 
+                 uint8_t offset)
 {
   return (uint32_t)((1 << 31)           /* Enable bit */
                     | (bus << 16)
@@ -125,17 +126,17 @@ init_dev(pci_device_t* dev, uint8_t bus, uint8_t slot, uint8_t func)
   dev->func = func;
 }
 
-
 uint16_t 
-pci_config_readw(uint32_t bus, uint32_t slot, uint32_t func, uint8_t offset)
+pci_config_readw(uint32_t bus, uint32_t slot, uint32_t func, 
+                 uint8_t offset)
 {
   outl(CONFIG_ADDR, pci_get_cfg_addr(bus, slot, func, offset));
   return (uint16_t)((inl(CONFIG_DATA) >> ((offset & 2) * 8)) & 0xFFFF);
 }
 
 void
-pci_config_writew(uint32_t bus, uint32_t slot, uint32_t func, uint8_t offset,
-                  uint16_t data)
+pci_config_writew(uint32_t bus, uint32_t slot, uint32_t func, 
+                  uint8_t offset, uint16_t data)
 {
   outl(CONFIG_ADDR, pci_get_cfg_addr(bus, slot, func, offset));
   outl(CONFIG_DATA, data);

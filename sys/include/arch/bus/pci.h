@@ -16,15 +16,16 @@ typedef struct
  *  Reads a word from the PCI configuration space.
  *
  */
-uint16_t pci_config_readw(uint32_t bus, uint32_t slot, uint32_t func, uint8_t offset);
+uint16_t pci_config_readw(uint32_t bus, uint32_t slot, uint32_t func,
+                          uint8_t offset);
 
 /*
  * Writes a word to the PCI configuration space.
  *
  */
 
-void pci_config_writew(uint32_t bus, uint32_t slot, uint32_t func, uint8_t offset,
-                           uint16_t data);
+void pci_config_writew(uint32_t bus, uint32_t slot, uint32_t func,
+                       uint8_t offset, uint16_t data);
 
 
 /*
