@@ -5,13 +5,15 @@
 #include <lib/hashmap.h>
 #include <lib/types.h>
 
+#define MAX_FILENAME_LENGTH 255
 
 typedef struct VFSNode
 {
   char name[256];
   struct VFSNode* parent;
   size_t n_children;
-  hashmap_t* children;
+  uint8_t is_dir : 1;
+  hashmap_t children;
 } vfs_node_t;
 
 
