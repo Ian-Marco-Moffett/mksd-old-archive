@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [[ $(find sys/src/ -name "*.o") ]]
+then 
+    rm $(find sys/src/ -name "*.o")
+fi

@@ -1,0 +1,52 @@
+#!/bin/bash
+
+set -e
+
+CFLAGS="-fexceptions --std=gnu11 -ffreestanding -fno-stack-protector -fno-pic \
+	-Werror=implicit -Werror=implicit-function-declaration \
+	-Werror=implicit-int -Werror=int-conversion \
+	-Werror=incompatible-pointer-types -Werror=int-to-pointer-cast \
+	-Werror=return-type -Wunused -mabi=sysv -mno-80387 -mno-mmx -mno-3dnow \
+	-mno-sse -mno-sse2 -mno-red-zone -mcmodel=kernel -pedantic \
+	-I sys/include/ -D_KERNEL -Wno-pointer-sign"
+
+compile() { 
+  for cfile in $(find sys/src/ -name "*.c")
+  do
+    echo -e "[\033[1;32mCompiling\033[0m]: $cfile"
+    cross/bin/x86_64-elf-gcc -c $CFLAGS $cfile -o $cfile.o
+  done
+}
+
+link() {
+  echo -e "[\033[1;32mLinking\033[0m]"
+  cross/bin/x86_64-elf-ld -nostdlib -zmax-page-size=0x1000 -static -Tsys/link.ld $(find sys/ -name "*.o") -o sys/kernel.sys
+}
+
+geniso() {
+  echo -e "[\033[1;35mISO\033[0m] Generating ISO"
+	mkdir -p iso_root
+	mkdir -p iso_root/boot
+	cp meta/limine.cfg limine/limine.sys limine/limine-cd.bin \
+	limine/limine-cd-efi.bin iso_root/
+	cp sys/kernel.sys meta/*.bmp iso_root/boot/
+	xorriso -as mkisofs -b limine-cd.bin -no-emul-boot -boot-load-size 4 \
+		-boot-info-table --efi-boot limine-cd-efi.bin -efi-boot-part \
+		--efi-boot-image --protective-msdos-label iso_root \
+        -o MKSD.iso
+	echo -e "[\033[1;33mLIMINE\033[0m] Deploying limine onto to the iso"
+	limine/limine-deploy MKSD.iso
+	rm -rf iso_root
+	echo -e "[\033[1;35mISO\033[0m] Generated ISO"
+}
+
+if [[ $(find sys/src/ -name "*.o") ]]
+then
+    geniso
+    exit 0
+fi
+
+
+compile
+link
+geniso

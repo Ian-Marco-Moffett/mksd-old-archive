@@ -1,0 +1,6 @@
+#!/bin/bash
+
+QEMU_ARGS="--enable-kvm -serial stdio -cpu qemu64 -M q35 -m 256M -boot d -smp 2 \
+	-rtc base=localtime -audiodev pa,id=audio0 -machine pcspk-audiodev=audio0"
+
+qemu-system-x86_64 $QEMU_ARGS -cdrom MKSD.iso
