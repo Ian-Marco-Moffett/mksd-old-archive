@@ -134,7 +134,7 @@ memset(void* ptr, uint8_t byte, size_t n)
 
 
 void 
-memcpy(void* dst, void* src, size_t n) 
+memcpy(void* dst, const void* src, size_t n)
 {
   asmvf(
       "cld\n"
