@@ -28,7 +28,7 @@ init_mm(void)
 }
 
 
-_noreturn int 
+_noreturn void
 _start(void) 
 {
   printk(PRINTK_INFO "Booting..\n");
