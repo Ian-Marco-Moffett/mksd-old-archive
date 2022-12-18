@@ -13,6 +13,7 @@
 #include <lib/string.h>
 #include <mm/pmm.h>
 #include <mm/vmm.h>
+#include <mm/heap.h>
 
 #define CLASS_ID    0x1
 #define SUBCLASS_ID 0x6
@@ -263,6 +264,18 @@ get_drive_type(HBA_PORT* port)
 }
 
 
+static void
+swap_endianess(char* buf, size_t n)
+{
+  for (size_t i = 0; i < n-1; i += 2)
+  {
+    uint8_t tmp = buf[i];
+    buf[i] = buf[i + 1];
+    buf[i + 1] = tmp;
+  }
+}
+
+
 /*
  *  Prints out some information
  *  during initialization.
@@ -320,11 +333,22 @@ get_port_info(HBA_PORT* port)
   cmd->command = 0xEC;
   cmd->c = 1;
   cmd->fis_type = FIS_TYPE_REG_H2D;
-
-  /* XXX: After sending the command
-   *      make sure to use the data.
-   */
   send_cmd(port, cmdslot);
+
+  char* serial_num = kmalloc(21);
+
+  printk(PRINTK_INFO "AHCI: Drive serial number: ");
+  memcpy(serial_num, (uint8_t*)(buf + 20), 20); 
+
+  swap_endianess(serial_num, 21);
+
+  /* Write out the serial number */
+  for (size_t i = 0; i < 21; ++i)
+  {
+    printk("%c", serial_num[i]);
+  }
+
+  printk("\n");
 }
 
 
