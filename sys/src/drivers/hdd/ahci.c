@@ -41,7 +41,8 @@ static volatile HBA_MEM* abar = NULL;
 static uint8_t
 read_hba_cap(void)
 {
-  printk(PRINTK_INFO "AHCI: Checking if HBA supports 64 bit addressing..\n");
+  printk(PRINTK_INFO "AHCI: Checking if HBA supports 64 " 
+                     "bit addressing..\n");
   if (!(abar->cap & (1 << 31)))
   {
     printk(PRINTK_WARN "AHCI: HBA does not support 64 bit addressing "
@@ -49,6 +50,8 @@ read_hba_cap(void)
 
     return 1;
   }
+
+  printk(PRINTK_INFO "AHCI: HBA supports 64 bit addressing!\n");
   
   /*
    *  AHCI spec states the amount of ports
