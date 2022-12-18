@@ -10,6 +10,7 @@
 #include <arch/bus/pci.h>
 #include <lib/log.h>
 #include <lib/asm.h>
+#include <lib/string.h>
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 
@@ -24,6 +25,17 @@
 #define SATA_SIG_SEMB 0xC33C0101    /* Enclosure management bridge */
 #define SATA_SIG_PM 0x96690101      /* Port multiplier */
 
+#define HBA_PxCMD_ST    (1 << 0)
+#define HBA_PxCMD_FRE   (1 << 4)
+#define HBA_PxCMD_FR    (1 << 14)
+#define HBA_PxCMD_CR    (1 << 15)
+
+#define HBA_PxIS_TFES      (1 << 30)
+#define HBA_PxIS_HBFS      (1 << 29)
+#define HBA_PxIS_IFS       (1 << 27)
+#define HBA_PxIS_HBDS      (1 << 28)
+#define HBA_PxIS_INFS      (1 << 26)
+
 #define AHCI_DEV_NULL 0
 #define AHCI_DEV_SATA 1
 #define AHCI_DEV_SEMB 2
@@ -34,7 +46,24 @@
 
 static pci_device_t* dev = NULL;
 static size_t n_hba_ports = 0;
+static size_t n_cmdslots = 0;
 static volatile HBA_MEM* abar = NULL;
+
+
+static int 
+find_cmdslot(HBA_PORT* port)
+{
+  uint32_t slots = (port->sact | port->ci);
+  for (int i = 0; i < n_cmdslots; ++i)
+  {
+    if (!(slots & (1 << i)))
+    {
+      return i;
+    }
+  }
+
+  return -1;
+}
 
 
 /*
@@ -84,6 +113,24 @@ start_cmd_engine(HBA_PORT* port)
   while (!(port->cmd & (1 << 14)));
 }
 
+
+static void 
+send_cmd(HBA_PORT* port, uint32_t slot) 
+{
+  while ((port->tfd & 0x88) != 0);
+  port->cmd &= ~(1 << 0);
+  while ((port->cmd & HBA_PxCMD_CR) != 0);
+
+  port->cmd |= HBA_PxCMD_FR | HBA_PxCMD_ST;
+  port->ci = 1 << slot;
+
+  while (port->ci & (1 << slot) != 0);
+
+  port->cmd &= ~(HBA_PxCMD_ST);
+  while ((port->cmd & HBA_PxCMD_ST) != 0);
+  port->cmd &= ~(HBA_PxCMD_FRE);
+}
+
 /*
  *  This function will first check
  *  if the HBA supports 64-bit addressing
@@ -126,6 +173,10 @@ read_hba_cap(void)
   printk(PRINTK_INFO "AHCI: HBA silicon supports %d %s.\n",
          n_hba_ports+1, n_hba_ports+1 > 1 ? "ports" : "port");
 
+  /* Fetch the amount of command slots in bits 12:8*/
+  n_cmdslots = (abar->cap >> 8) & 0x1F;
+  printk(PRINTK_INFO "AHCI: HBA supports %d command %s.\n",
+         n_cmdslots, n_cmdslots > 1 ? "slots" : "slot");
 
   return 0;
 }
@@ -151,8 +202,7 @@ take_ownership(void)
     return 1;
   }
 
-  abar->bohc |= (1 << 1);
-  
+  abar->bohc |= (1 << 1);  
   while (abar->bohc & (1 << 0) == 0);
 
   for (uint32_t i = 0; i < 5; ++i)
@@ -227,7 +277,56 @@ get_port_info(HBA_PORT* port)
 
   printk(PRINTK_INFO "AHCI: Mechanical presence switch on port: %s\n",
          port->cmd & (1 << 9) ? "yes" : "no");
+
+  /* Fetch a commandslot */
+  int cmdslot = find_cmdslot(port);
+  if (cmdslot == -1)
+  {
+    printk(PRINTK_WARN "Something went wrong "
+                       "(no free cmdslot)\n");
+    return;
+  }
+
+  /* Build a command header*/
+  uint64_t clb = ((uint64_t)port->clbu << 32 | port->clb);
+  HBA_CMD_HEADER* cmdhdr = (HBA_CMD_HEADER*)(clb + VMM_HIGHER_HALF);
+  cmdhdr[cmdslot].prdtl = 1;
+  cmdhdr[cmdslot].cfl = sizeof(FIS_REG_H2D)/sizeof(uint32_t);
+  cmdhdr[cmdslot].w = 0;
+  cmdhdr[cmdslot].p = 0;
+  
+  /* Get command table base */
+  uint64_t ctba = ((uint64_t)cmdhdr[cmdslot].ctbau << 32 
+                             | cmdhdr[cmdslot].ctba);
+  
+  /* Set the command table and null it */
+  HBA_CMD_TBL* cmdtbl = (HBA_CMD_TBL*)(ctba + VMM_HIGHER_HALF);
+  memzero(cmdtbl, sizeof(HBA_CMD_TBL));
+
+  
+  /* 
+   * Allocate some physical memory
+   * for use as an identity buffer.
+   */
+  uintptr_t buf = pmm_alloc(1);
+  memzero((void*)(buf + VMM_HIGHER_HALF), 4096);
+
+  /* Set up the cmdtbl entries */
+  cmdtbl->prdt[0].dba = (uint32_t)buf;
+  cmdtbl->prdt[0].dbau = (uint32_t)(buf >> 32);
+  cmdtbl->prdt[0].dbc = 511;
+
+  FIS_REG_H2D* cmd = (FIS_REG_H2D*)cmdtbl->cfis;
+  cmd->command = 0xEC;
+  cmd->c = 1;
+  cmd->fis_type = FIS_TYPE_REG_H2D;
+
+  /* XXX: After sending the command
+   *      make sure to use the data.
+   */
+  send_cmd(port, cmdslot);
 }
+
 
 
 /*
@@ -268,12 +367,14 @@ init_port_single(HBA_PORT* port)
     cmdhdr[i].ctbau = (uint32_t)(desc_base >> 32);
   }
 
-  /* Dump some information */
-  get_port_info(port);
+  cmdhdr->prdtl = 1;
   
   /* Start up the command engine */
   printk(PRINTK_INFO "AHCI: Starting up HBA command engine..\n");
   start_cmd_engine(port);
+
+  /* Dump some information */
+  get_port_info(port);
 }
 
 

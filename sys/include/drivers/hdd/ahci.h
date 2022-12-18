@@ -107,6 +107,24 @@ typedef struct
   uint32_t r1[4];                /* Reserved */
 } HBA_CMD_HEADER;
 
+typedef struct
+{
+  uint32_t dba;         /* Data base addr */
+  uint32_t dbau;        /* Data base addr upper */
+  uint32_t r0;          /* Reserved */
+  uint32_t dbc;         /* Byte count */
+  uint32_t r1;          /* Reserved */
+  uint32_t i : 1;       /* Interrupt on completion */
+} HBA_PRDT_ENTRY;
+
+typedef struct
+{
+  uint8_t cfis[64];      /* Command fis */
+  uint8_t acmd[16];      /* ATAPI command */
+  uint8_t r[48];         /* Reserved */
+  HBA_PRDT_ENTRY prdt[1];
+} HBA_CMD_TBL;
+
 
 void ahci_init(void);
 
