@@ -39,4 +39,7 @@ void pci_config_writew(uint32_t bus, uint32_t slot, uint32_t func,
 
 void pci_enable_bus_mastering(pci_device_t* dev);
 
+
+pci_device_t* pci_find(uint16_t vendor_id, uint16_t device_id);
+
 #endif

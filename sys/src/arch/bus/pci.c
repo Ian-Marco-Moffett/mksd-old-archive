@@ -6,6 +6,7 @@
 
 #include <arch/bus/pci.h>
 #include <arch/x64/io.h>
+#include <mm/heap.h>
 
 /* For configuration space access */
 #define CONFIG_ADDR 0xCF8
@@ -150,4 +151,30 @@ pci_enable_bus_mastering(pci_device_t* dev)
   pci_config_writew(dev->bus, dev->slot, dev->func, 0x4, (val 
                                                           | (1 << 2) 
                                                           | (1 << 0)));
+}
+
+
+pci_device_t*
+pci_find(uint16_t vendor_id, uint16_t device_id)
+{
+  pci_device_t* dev = NULL;
+
+  for (uint8_t bus = 0; bus < 5; ++bus)
+  {
+    for (uint8_t slot = 0; slot < 32; ++slot)
+    {
+      for (uint8_t func = 0; func < 8; ++func)
+      {
+        if (pci_read_vendor(bus, slot, func) == vendor_id 
+            && pci_read_device_id(bus, slot, func) == device_id)
+        {
+          dev = kmalloc(sizeof(pci_device_t));
+          init_dev(dev, bus, slot, func);
+          return dev;
+        }
+      }
+    }
+  }
+
+  return NULL;
 }
