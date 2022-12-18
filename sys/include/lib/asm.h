@@ -15,5 +15,10 @@
 #define asmv(code) __asm__ __volatile__(code)
 #define asmvf(code, ...) __asm__ __volatile(code, __VA_ARGS__)
 
+#define CLI_SLEEP                               \
+  for (uint64_t i = 0; i < 100000000; ++i) {    \
+    asmv("cli");                                \
+  }
+
 
 #endif
