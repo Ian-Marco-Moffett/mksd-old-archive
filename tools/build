@@ -10,6 +10,14 @@ CFLAGS="-fexceptions --std=gnu11 -ffreestanding -fno-stack-protector -fno-pic \
 	-mno-sse -mno-sse2 -mno-red-zone -mcmodel=kernel -pedantic \
 	-I sys/include/ -D_KERNEL -Wno-pointer-sign"
 
+deps() {
+  if [[ ! -d limine/ ]]
+  then
+    git clone https://github.com/limine-bootloader/limine.git --branch=v4.0-binary --depth=1 
+    make -C limine
+  fi
+}
+
 compile() { 
   for cfile in $(find sys/src/ -name "*.c")
   do
@@ -47,6 +55,7 @@ then
 fi
 
 
+deps
 compile
 link
 geniso
