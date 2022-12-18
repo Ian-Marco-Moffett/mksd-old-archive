@@ -1,6 +1,8 @@
 #ifndef HDD_AHCI_H_
 #define HDD_AHCI_H_
 
+#include <lib/types.h>
+
 typedef enum
 {
   FIS_TYPE_REG_H2D = 0x27,      /* Host to device */
@@ -86,5 +88,8 @@ typedef volatile struct
   uint8_t vendor[0x100-0xA0];   /* Vendor specific */
   HBA_PORT ports[1];            /* 1 ~ 32 */
 } HBA_MEM;
+
+
+void ahci_init(void);
 
 #endif

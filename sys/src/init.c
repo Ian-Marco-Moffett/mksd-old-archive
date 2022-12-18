@@ -12,6 +12,7 @@
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
 #include <fs/vfs.h>
+#include <drivers/hdd/ahci.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -28,6 +29,13 @@ init_mm(void)
 }
 
 
+static void
+init_drivers(void)
+{
+  ahci_init();
+}
+
+
 _noreturn void
 _start(void) 
 {
@@ -41,6 +49,7 @@ _start(void)
   
   acpi_init();
   vfs_init();
+  init_drivers();
   asmv("cli; hlt");
   __builtin_unreachable();
 }
