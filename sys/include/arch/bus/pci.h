@@ -5,7 +5,7 @@
 
 typedef struct
 {
-  uintptr_t bars[5];
+  uintptr_t bars[6];
   uint8_t bus;
   uint8_t slot;
   uint8_t func;
