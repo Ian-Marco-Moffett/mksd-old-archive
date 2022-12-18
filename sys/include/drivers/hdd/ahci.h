@@ -70,7 +70,6 @@ typedef volatile struct
   uint32_t vendor[4];           /* Vendor specific */
 } HBA_PORT;
 
-
 typedef volatile struct
 {
   uint32_t cap;                 /* Host capability */
@@ -88,6 +87,25 @@ typedef volatile struct
   uint8_t vendor[0x100-0xA0];   /* Vendor specific */
   HBA_PORT ports[1];            /* 1 ~ 32 */
 } HBA_MEM;
+
+
+typedef struct
+{
+  uint8_t cfl  : 5;              /* Command FIS length */
+  uint8_t a    : 1;              /* ATAPI */
+  uint8_t w    : 1;              /* Write */
+  uint8_t p    : 1;              /* Prefetchable */
+  uint8_t r    : 1;              /* Reset */
+  uint8_t b    : 1;              /* BIST */
+  uint8_t c    : 1;              /* Clear busy upon R_OK */
+  uint8_t resv : 1;              /* Reserved */
+  uint8_t pmp  : 4;              /* Port multiplier port */
+  uint16_t prdtl;                /* Phys region descriptor tbl length */
+  volatile uint32_t prdbc;       /* PRDT byte count transferred */
+  uint32_t ctba;                 /* Command table desc base */
+  uint32_t ctbau;                /* Command table desc base (upper 32 bits) */
+  uint32_t r1[4];                /* Reserved */
+} HBA_CMD_HEADER;
 
 
 void ahci_init(void);

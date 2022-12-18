@@ -10,15 +10,79 @@
 #include <arch/bus/pci.h>
 #include <lib/log.h>
 #include <lib/asm.h>
+#include <mm/pmm.h>
+#include <mm/vmm.h>
 
 #define CLASS_ID    0x1
 #define SUBCLASS_ID 0x6
+
+#define HBA_PORT_IPM_ACTIVE 1
+#define HBA_PORT_DET_PRESENT 3
+
+#define SATA_SIG_ATA 0x00000101     /* SATA drive */
+#define SATA_SIG_ATAPI 0xEB140101   /* SATAPI drive */
+#define SATA_SIG_SEMB 0xC33C0101    /* Enclosure management bridge */
+#define SATA_SIG_PM 0x96690101      /* Port multiplier */
+
+#define AHCI_DEV_NULL 0
+#define AHCI_DEV_SATA 1
+#define AHCI_DEV_SEMB 2
+#define AHCI_DEV_PM 3
+#define AHCI_DEV_SATAPI 4
 
 
 
 static pci_device_t* dev = NULL;
 static size_t n_hba_ports = 0;
 static volatile HBA_MEM* abar = NULL;
+
+
+/*
+ * This function causes
+ * the HBA to stop posting
+ * recieved FISes into the
+ * FIS receive area AND
+ * prevents the HBA 
+ * from getting in commands.
+ *
+ * This is to prevent 
+ * funky things from
+ * happening.
+ *
+ */
+
+static void
+stop_cmd_engine(HBA_PORT* port)
+{
+  // Unset FRE.
+  port->cmd &= ~(1 << 4);
+  while (port->cmd & (1 << 14));
+  
+  // Unset ST.
+  port->cmd &= ~(1 << 0);
+  while (port->cmd & (1 << 15));
+}
+
+
+/*
+ *  This function starts up 
+ *  the command engine
+ *  so the HBA can receive
+ *  FISes and process commands.
+ *
+ */
+
+static void
+start_cmd_engine(HBA_PORT* port)
+{
+  // Set ST.
+  port->cmd |= (1 << 0);
+  while (!(port->cmd & (1 << 15)));
+
+  // Set FRE.
+  port->cmd |= (1 << 4);
+  while (!(port->cmd & (1 << 14)));
+}
 
 /*
  *  This function will first check
@@ -116,6 +180,135 @@ take_ownership(void)
   return 0;
 }
 
+/*
+ *  This function returns
+ *  the type of drive
+ *  attached to a port.
+ *
+ */
+
+static int
+get_drive_type(HBA_PORT* port)
+{
+  uint32_t ssts = port->ssts;
+  uint8_t ipm = (ssts >> 8) & 0xF;
+  uint8_t det = ssts & 0xF;
+
+  if (det != HBA_PORT_DET_PRESENT || ipm != HBA_PORT_IPM_ACTIVE)
+  {
+    return AHCI_DEV_NULL;
+  }
+
+  switch (port->sig)
+  {
+    case SATA_SIG_ATAPI:
+      return AHCI_DEV_SATAPI;
+    case SATA_SIG_SEMB:
+      return AHCI_DEV_SEMB;
+    case SATA_SIG_PM:
+      return AHCI_DEV_PM;
+    default:
+      return AHCI_DEV_SATA;
+  }
+}
+
+
+/*
+ *  Prints out some information
+ *  during initialization.
+ *
+ */
+
+static void 
+get_port_info(HBA_PORT* port)
+{
+  printk(PRINTK_INFO "AHCI: Port hot plug capable: %s\n",
+         port->cmd & (1 << 18) ? "yes" : "no");
+
+  printk(PRINTK_INFO "AHCI: Mechanical presence switch on port: %s\n",
+         port->cmd & (1 << 9) ? "yes" : "no");
+}
+
+
+/*
+ *  This function sets
+ *  up a device on an
+ *  HBA port.
+ *
+ *  NOTE: Should only be called once
+ *        per port.
+ *
+ *
+ */
+
+static void
+init_port_single(HBA_PORT* port)
+{
+  /* Stop the command engine */
+  printk(PRINTK_INFO "AHCI: Waiting for HBA command engine to stop..\n");
+  stop_cmd_engine(port);
+  printk(PRINTK_INFO "AHCI: Successfully stopped HBA command engine!\n");
+  printk(PRINTK_INFO "AHCI: Initializing HBA port..\n");
+  
+  /* Set up the command list */
+  uintptr_t clb = pmm_alloc(1);
+  port->clb = (uint32_t)clb;
+  port->clbu = (uint32_t)(clb >> 32);
+
+  /* Set up FIS buffer */
+  uint64_t fb = pmm_alloc(1);
+  port->fb = (uint32_t)fb;
+  port->fbu = (uint32_t)(fb >> 32);
+
+  HBA_CMD_HEADER* cmdhdr = (HBA_CMD_HEADER*)(port->clb + VMM_HIGHER_HALF);
+  for (size_t i = 0; i < 32; ++i)
+  {
+    uintptr_t desc_base = pmm_alloc(1);
+    cmdhdr[i].ctba = (uint32_t)desc_base;
+    cmdhdr[i].ctbau = (uint32_t)(desc_base >> 32);
+  }
+
+  /* Dump some information */
+  get_port_info(port);
+  
+  /* Start up the command engine */
+  printk(PRINTK_INFO "AHCI: Starting up HBA command engine..\n");
+  start_cmd_engine(port);
+}
+
+
+/*
+ *  This function sets up all ports
+ *  on the HBA.
+ *
+ *  NOTE: This as of now only sets up 
+ *        SATA drives.
+ *
+ *
+ */
+
+static void
+init_ports(void)
+{
+  uint32_t pi = abar->pi;
+
+  for (uint32_t i = 0; i < 32; ++i)
+  {
+    if (pi & (1 << i))
+    {
+      int dt = get_drive_type(&abar->ports[i]);
+      switch (dt)
+      {
+        case AHCI_DEV_SATA:
+          printk(PRINTK_INFO "AHCI: SATA drive found @HBA_PORT_%d\n", i);
+          init_port_single(&abar->ports[i]);
+          printk(PRINTK_INFO "AHCI: Port %d initialized successfully!\n", i);
+          break;
+      }
+    }
+  }
+}
+
 void
 ahci_init(void)
 {
@@ -147,7 +340,7 @@ ahci_init(void)
    *  an HBA BIOS handoff.
    */
 
-  printk(PRINTK_INFO "AHCI: performing HBA BIOS handoff..\n");
+  printk(PRINTK_INFO "AHCI: Performing HBA BIOS handoff..\n");
   if (take_ownership() != 0)
   {
     return;
@@ -162,4 +355,6 @@ ahci_init(void)
   {
     return;
   }
+
+  init_ports();
 }
