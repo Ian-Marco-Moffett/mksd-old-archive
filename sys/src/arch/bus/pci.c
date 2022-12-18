@@ -114,7 +114,7 @@ get_bar5(uint8_t bus, uint8_t slot, uint8_t func)
 }
 
 static inline void 
-init_dev(pci_device_t* dev, uint8_t bus, uint8_t slot, uint8_t func)
+pci_init_dev(pci_device_t* dev, uint8_t bus, uint8_t slot, uint8_t func)
 {
   dev->bars[0] = get_bar0(bus, slot, func);
   dev->bars[1] = get_bar1(bus, slot, func);
@@ -169,7 +169,40 @@ pci_find(uint16_t vendor_id, uint16_t device_id)
             && pci_read_device_id(bus, slot, func) == device_id)
         {
           dev = kmalloc(sizeof(pci_device_t));
-          init_dev(dev, bus, slot, func);
+          pci_init_dev(dev, bus, slot, func);
+          return dev;
+        }
+      }
+    }
+  }
+
+  return NULL;
+}
+
+
+pci_device_t* 
+pci_find_any(uint8_t class, uint8_t subclass,
+                           int8_t interface) 
+{
+  pci_device_t* dev = NULL;
+
+  for (uint8_t bus = 0; bus < 5; ++bus)
+  {
+    for (uint8_t slot = 0; slot < 32; ++slot)
+    {
+      for (uint8_t func = 0; func < 8; ++func)
+      {
+        if (pci_read_device_class(bus, slot, func) == class
+            && pci_read_device_subclass(bus, slot, func) == subclass)
+        {
+          if (pci_read_progif(bus, slot, func) != interface 
+              && interface != -1)
+          {
+            continue;
+          }
+
+          dev = kmalloc(sizeof(pci_device_t));
+          pci_init_dev(dev, bus, slot, func);
           return dev;
         }
       }

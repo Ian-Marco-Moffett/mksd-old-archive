@@ -42,4 +42,12 @@ void pci_enable_bus_mastering(pci_device_t* dev);
 
 pci_device_t* pci_find(uint16_t vendor_id, uint16_t device_id);
 
+/*
+ *  Set interface -1 for it to be ignored.
+ *
+ */
+
+pci_device_t* pci_find_any(uint8_t class, uint8_t subclass,
+                           int8_t interface);
+
 #endif
