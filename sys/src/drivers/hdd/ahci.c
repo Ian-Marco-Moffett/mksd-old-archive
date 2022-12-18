@@ -302,7 +302,8 @@ init_ports(void)
         case AHCI_DEV_SATA:
           printk(PRINTK_INFO "AHCI: SATA drive found @HBA_PORT_%d\n", i);
           init_port_single(&abar->ports[i]);
-          printk(PRINTK_INFO "AHCI: Port %d initialized successfully!\n", i);
+          printk(PRINTK_INFO "AHCI: Port %d initialized "
+                             "successfully!\n", i);
           break;
       }
     }
