@@ -12,6 +12,7 @@
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
 #include <fs/vfs.h>
+#include <fs/devfs.h>
 #include <drivers/hdd/ahci.h>
 
 #if defined(__x86_64__)
@@ -36,6 +37,14 @@ init_drivers(void)
 }
 
 
+static void
+fs_init(void)
+{
+  vfs_init();
+  devfs_init();
+}
+
+
 _noreturn void
 _start(void) 
 {
@@ -48,7 +57,7 @@ _start(void)
 #endif
   
   acpi_init();
-  vfs_init();
+  fs_init();
   init_drivers();
   asmv("cli; hlt");
   __builtin_unreachable();
