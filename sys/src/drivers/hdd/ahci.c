@@ -267,12 +267,29 @@ get_drive_type(HBA_PORT* port)
 static void
 swap_endianess(char* buf, size_t n)
 {
-  for (size_t i = 0; i < n-1; i += 2)
+  for (size_t i = 0; i < n; i += 2)
   {
     uint8_t tmp = buf[i];
     buf[i] = buf[i + 1];
     buf[i + 1] = tmp;
   }
+}
+
+
+static void 
+print_char_arr(char* buf, size_t n)
+{
+  for (size_t i = 0; i < n; ++i)
+  {
+    if (buf[i] == ' ')
+    {
+      continue;
+    }
+
+    printk("%c", buf[i]);
+  }
+
+  printk("\n");
 }
 
 
@@ -336,19 +353,21 @@ get_port_info(HBA_PORT* port)
   send_cmd(port, cmdslot);
 
   char* serial_num = kmalloc(21);
+  char* model_num = kmalloc(41);
 
-  printk(PRINTK_INFO "AHCI: Drive serial number: ");
   memcpy(serial_num, (uint8_t*)(buf + 20), 20); 
+  swap_endianess(serial_num, 20);
 
-  swap_endianess(serial_num, 21);
+  memcpy(model_num, (uint8_t*)(buf + 54), 40);
+  swap_endianess(model_num, 40);
 
   /* Write out the serial number */
-  for (size_t i = 0; i < 21; ++i)
-  {
-    printk("%c", serial_num[i]);
-  }
+  printk(PRINTK_INFO "AHCI: Drive serial number: ");
+  print_char_arr(serial_num, 21);
 
-  printk("\n");
+  /* Write out model number */
+  printk(PRINTK_INFO "AHCI: Drive model number: "); 
+  print_char_arr(model_num, 21);
 }
 
 
