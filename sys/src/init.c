@@ -11,8 +11,6 @@
 #include <lib/log.h>
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
-#include <fs/vfs.h>
-#include <fs/devfs.h>
 #include <drivers/hdd/ahci.h>
 
 #if defined(__x86_64__)
@@ -40,8 +38,6 @@ init_drivers(void)
 static void
 fs_init(void)
 {
-  vfs_init();
-  devfs_init();
 }
 
 
