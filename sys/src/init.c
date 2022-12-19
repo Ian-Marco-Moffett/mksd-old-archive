@@ -12,6 +12,7 @@
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
 #include <drivers/hdd/ahci.h>
+#include <fs/vfs.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -38,6 +39,7 @@ init_drivers(void)
 static void
 fs_init(void)
 {
+  vfs_init();
 }
 
 

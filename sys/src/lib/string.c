@@ -9,6 +9,7 @@
 #include <lib/string.h>
 #include <lib/types.h>
 #include <lib/asm.h>
+#include <mm/heap.h>
 
 #if defined(__x86_64__)
 size_t 
@@ -197,5 +198,61 @@ strappend(char* str1, const char* str2)
   str1[i] = '\0';
 }
 
+
+size_t strdilm_count(const char* str, char dilm)
+{
+  size_t count = 0;
+  while (*str)
+  {
+    if (*str == dilm)
+    {
+      ++count;
+    }
+
+    ++str;
+  }
+
+  return count;
+}
+
+char*
+strsplit(const char* str, char dilm, size_t idx)
+{
+  char* split = kmalloc(strlen(str) + 1);
+  size_t split_idx = 0;
+  for (size_t i = 0; i < idx; ++i)
+  {
+    while (1)
+    {
+      if (*str == '\0')
+      {
+        kfree(split);
+        return NULL;
+      }
+
+      if (*str == dilm)
+      {
+        ++str;
+        break;
+      } 
+
+      ++str;
+    }
+  } 
+
+  while (*str)
+  {
+    if (*str == dilm || *str == '\0')
+    {
+      split[split_idx] = '\0';
+      break;
+    }
+
+    split[split_idx++] = *str;
+    ++str;
+  }
+
+  return split;
+}
 
 #endif
