@@ -1,3 +1,10 @@
+/*
+ *  Description: Virtual file system abstraction.
+ *  Author(s): Ian Marco Moffett
+ *
+ */
+
+
 #include <fs/vfs.h>
 #include <lib/string.h>
 #include <lib/log.h>
