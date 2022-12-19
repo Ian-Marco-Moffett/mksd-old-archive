@@ -14,6 +14,7 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
+#include <fs/devfs.h>
 
 #define CLASS_ID    0x1
 #define SUBCLASS_ID 0x6
@@ -43,6 +44,26 @@
 #define AHCI_DEV_PM 3
 #define AHCI_DEV_SATAPI 4
 
+
+static void 
+dev_open(vfs_node_t* vfsnode)
+{
+  // TODO: Implement.
+  printk(PRINTK_WARN "/dev/%s opened!\n", vfsnode->name);
+}
+
+
+static void
+dev_close(vfs_node_t* vfsnode)
+{
+  // TODO
+}
+
+
+static fops_t dev_fops = {
+  .open = dev_open,
+  .close = dev_close
+};
 
 
 static pci_device_t* dev = NULL;
@@ -437,6 +458,8 @@ init_port_single(HBA_PORT* port)
 static void
 init_ports(void)
 {
+  size_t drive_count = 0;
+  char* drive_id = kmalloc(sizeof(char) * (23));
   uint32_t pi = abar->pi;
 
   for (uint32_t i = 0; i < 32; ++i)
@@ -451,6 +474,21 @@ init_ports(void)
           init_port_single(&abar->ports[i]);
           printk(PRINTK_INFO "AHCI: Port %d initialized "
                              "successfully!\n", i);
+          
+          memcpy(drive_id, "sda", 4);
+
+          if (drive_count != 0)
+          {
+            strappend(drive_id, dec2str(drive_count++));
+          }
+          else
+          {
+            ++drive_count;
+          }
+         
+          devfs_register_device(drive_id, &dev_fops, VFS_FLAG_READ);
+          printk(PRINTK_INFO "AHCI: Created /dev/%s\n", drive_id);
+          memzero(drive_id, 23);
           break;
       }
     }
