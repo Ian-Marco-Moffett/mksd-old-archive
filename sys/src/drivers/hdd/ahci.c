@@ -368,6 +368,9 @@ get_port_info(HBA_PORT* port)
   /* Write out model number */
   printk(PRINTK_INFO "AHCI: Drive model number: "); 
   print_char_arr(model_num, 21);
+
+  kfree(serial_num);
+  kfree(model_num);
 }
 
 
