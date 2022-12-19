@@ -12,7 +12,7 @@
 #include <lib/asm.h>        // XXX: Remove this include after using
                             // vfs_path_to_node.
 
-static vfs_node_t* root_node = NULL;
+vfs_node_t* g_root_fs = NULL;
 
 
 static inline vfs_node_t*
@@ -39,7 +39,7 @@ vfs_path_to_node(const char* path)
   size_t cur_fname_idx = 0;
 
   /* Last node we found */
-  vfs_node_t* last_node = root_node;
+  vfs_node_t* last_node = g_root_fs;
 
   for (size_t i = 0; i < strlen(path); ++i)
   {
@@ -57,26 +57,28 @@ vfs_path_to_node(const char* path)
     current_fname[cur_fname_idx++] = path[i];
   }
 
-  return last_node == root_node ? NULL : last_node;
+  return last_node == g_root_fs ? NULL : last_node;
 }
 
 
-int
+int 
 vfs_make_node(const char* name, vfs_node_t* parent, 
-              uint8_t is_dir, vfs_node_t** node_out)
+                  vfs_flags_t flags, vfs_node_t** node_out,
+                  fops_t* fs_ops)
 {
   /* Check if the name is good enough */
   if (strlen(name) > 255)
   {
     return -ENAMETOOLONG;
   }
-  
+
   *node_out = kmalloc(sizeof(vfs_node_t));
   vfs_node_t* new_node = *node_out;
 
   new_node->n_children = 0;
   new_node->parent = parent;
-  new_node->is_dir = is_dir;
+  new_node->fs_ops = fs_ops;
+  new_node->flags = flags;
   memcpy(new_node->name, name, strlen(name));
 
   if (parent != NULL)
@@ -89,12 +91,22 @@ vfs_make_node(const char* name, vfs_node_t* parent,
 
 
 void 
+vfs_print_perms(const char* fsname, const vfs_node_t* node)
+{
+  printk(PRINTK_INFO "%s flags: -%c%c%c-\n", fsname,
+         node->flags & (VFS_FLAG_READ)      ? 'r' : '-',
+         node->flags & (VFS_FLAG_WRITE)     ? 'w' : '-',
+         node->flags & (VFS_FLAG_DIRECTORY) ? 'd' : '-');
+}
+
+
+void 
 vfs_init(void)
 {
-  if (root_node != NULL)
+  if (g_root_fs != NULL)
   {
     return;
   }
 
-  vfs_make_node("", NULL, 1, &root_node);
+  vfs_make_node("", NULL, 1, &g_root_fs, NULL);
 }

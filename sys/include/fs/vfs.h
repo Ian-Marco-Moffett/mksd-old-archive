@@ -7,13 +7,28 @@
 
 #define MAX_FILENAME_LENGTH 255
 
+#define VFS_FLAG_READ       (1 << 0)  /* Readable */
+#define VFS_FLAG_WRITE      (1 << 1)  /* Writable */
+#define VFS_FLAG_DIRECTORY  (1 << 2)  /* Directory */
+
+typedef uint8_t vfs_flags_t;
+struct VFSNode;
+
+typedef struct 
+{
+  void(*open)(struct VFSNode* vfsnode);
+  void(*close)(struct VFSNode* vfsnode);
+} fops_t;
+
+
 typedef struct VFSNode
 {
   char name[256];
   struct VFSNode* parent;
   size_t n_children;
-  uint8_t is_dir : 1;
   hashmap_t children;
+  fops_t* fs_ops;
+  vfs_flags_t flags;
 } vfs_node_t;
 
 
@@ -29,7 +44,10 @@ void vfs_init(void);
  */
 
 int vfs_make_node(const char* name, vfs_node_t* parent, 
-                  uint8_t is_dir, vfs_node_t** node_out);
+                  vfs_flags_t flags, vfs_node_t** node_out,
+                  fops_t* fs_ops);
 
+void vfs_print_perms(const char* fsname, const vfs_node_t* node);
 
+extern vfs_node_t* g_root_fs;
 #endif
