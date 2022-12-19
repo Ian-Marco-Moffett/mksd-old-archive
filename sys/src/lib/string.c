@@ -182,4 +182,20 @@ memcmp(const char* str1, const char* str2, size_t n)
 }
 
 
+void
+strappend(char* str1, const char* str2)
+{
+  size_t str1_len = strlen(str1);
+  size_t str2_len = strlen(str2);
+  size_t str2_idx = 0;
+  size_t i;
+  for (i = str1_len; i < str1_len+str2_len; ++i)
+  {
+    str1[i] = str2[str2_idx++];
+  }
+
+  str1[i] = '\0';
+}
+
+
 #endif

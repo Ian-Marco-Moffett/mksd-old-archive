@@ -10,6 +10,7 @@ void memset(void* ptr, uint8_t byte, size_t n);
 void memcpy(void* dst, const void* src, size_t n);
 char* dec2str(size_t number);
 char* hex2str(uint64_t hex_num);
+void strappend(char* str1, const char* str2);
 size_t strlen(const char* str);
 uint8_t strcmp(const char* str1, const char* str2);
 uint8_t memcmp(const char* str1, const char* str2, size_t n);
