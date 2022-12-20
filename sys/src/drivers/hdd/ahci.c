@@ -492,22 +492,15 @@ init_ports(void)
 }
 
 
-int
-ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
+static void
+prep_rw_op(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors, int cmdslot, uint8_t write)
 {
-  int cmdslot = find_cmdslot(main_drive);
-
-  if (cmdslot == -1)
-  {
-    return 1;
-  }
-
   /* Build a command header */
   uint64_t clb = ((uint64_t)main_drive->clbu << 32 | main_drive->clb);
   HBA_CMD_HEADER* cmdhdr = (HBA_CMD_HEADER*)(clb + VMM_HIGHER_HALF);
   cmdhdr[cmdslot].prdtl = 1;
   cmdhdr[cmdslot].cfl = sizeof(FIS_REG_H2D)/sizeof(uint32_t);
-  cmdhdr[cmdslot].w = 1;
+  cmdhdr[cmdslot].w = write;
   cmdhdr[cmdslot].p = 0;
 
   /* Get the command table base and null it */
@@ -525,7 +518,8 @@ ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
   
   FIS_REG_H2D* cmd = (FIS_REG_H2D*)cmdtbl->cfis;
   cmd->fis_type = FIS_TYPE_REG_H2D;
-  cmd->command = 0x35;        /* Write DMA extended */
+  cmd->command = write ? 0x35 : 0x25;        /* (0x35: Write)
+                                                (0x25: Read) DMA extended */
   cmd->c = 1;
   cmd->lba0   = (uint8_t)lba;
   cmd->lba1   = (uint8_t)(lba >> 8);
@@ -536,8 +530,20 @@ ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
   cmd->lba5   = (uint8_t)(lba >> 40);
   cmd->countl = (uint8_t)n_sectors;
   cmd->counth = (uint8_t)(n_sectors >> 8);
-  send_cmd(main_drive, cmdslot);
+}
 
+int
+ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
+{
+  int cmdslot = find_cmdslot(main_drive);
+
+  if (cmdslot == -1)
+  {
+    return 1;
+  }
+
+  prep_rw_op(lba, buf_phys, n_sectors, cmdslot, 1);
+  send_cmd(main_drive, cmdslot);
   return 0;
 }
 
