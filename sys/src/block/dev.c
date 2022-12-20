@@ -27,7 +27,6 @@ block_read_drive(bdevtype_t requested_blockdev, uint16_t* buf_phys, uint8_t sect
   FILE* fp = fopen(devstr[requested_blockdev], "r");
   if (fp == NULL)
   {
-    fclose(fp);
     return 1;
   }
   fclose(fp);
