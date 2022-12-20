@@ -48,6 +48,7 @@ static pci_device_t* dev = NULL;
 static size_t n_hba_ports = 0;
 static size_t n_cmdslots = 0;
 static volatile HBA_MEM* abar = NULL;
+static volatile HBA_PORT* main_drive = NULL;
 
 
 static void
@@ -464,6 +465,11 @@ init_ports(void)
           printk(PRINTK_INFO "AHCI: Port %d initialized "
                              "successfully!\n", i); 
 
+          if (main_drive == NULL)
+          {
+            main_drive = &abar->ports[i];
+          }
+
           if (drive_count == 0)
           {
             devfs_register_device("sda", &fops);
@@ -484,6 +490,57 @@ init_ports(void)
 
   kfree(drive_id);
 }
+
+
+int
+ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
+{
+  int cmdslot = find_cmdslot(main_drive);
+
+  if (cmdslot == -1)
+  {
+    return 1;
+  }
+
+  /* Build a command header */
+  uint64_t clb = ((uint64_t)main_drive->clbu << 32 | main_drive->clb);
+  HBA_CMD_HEADER* cmdhdr = (HBA_CMD_HEADER*)(clb + VMM_HIGHER_HALF);
+  cmdhdr[cmdslot].prdtl = 1;
+  cmdhdr[cmdslot].cfl = sizeof(FIS_REG_H2D)/sizeof(uint32_t);
+  cmdhdr[cmdslot].w = 1;
+  cmdhdr[cmdslot].p = 0;
+
+  /* Get the command table base and null it */
+  uint64_t ctba = ((uint64_t)cmdhdr[cmdslot].ctbau << 32
+                             | cmdhdr[cmdslot].ctba);
+  HBA_CMD_TBL* cmdtbl = (HBA_CMD_TBL*)(ctba + VMM_HIGHER_HALF);
+  memzero(cmdtbl, sizeof(HBA_CMD_TBL));
+
+  uintptr_t buf = (uintptr_t)buf_phys;
+
+  /* Set up cmdtbl prdt entries */
+  cmdtbl->prdt[0].dba = (uint32_t)buf;
+  cmdtbl->prdt[0].dbau = (uint32_t)(buf >> 32);
+  cmdtbl->prdt[0].dbc = (n_sectors*512)-1;
+  
+  FIS_REG_H2D* cmd = (FIS_REG_H2D*)cmdtbl->cfis;
+  cmd->fis_type = FIS_TYPE_REG_H2D;
+  cmd->command = 0x35;        /* Write DMA extended */
+  cmd->c = 1;
+  cmd->lba0   = (uint8_t)lba;
+  cmd->lba1   = (uint8_t)(lba >> 8);
+  cmd->lba2   = (uint8_t)(lba >> 16);
+  cmd->device = 64;
+  cmd->lba3   = (uint8_t)(lba >> 24);
+  cmd->lba4   = (uint8_t)(lba >> 32);
+  cmd->lba5   = (uint8_t)(lba >> 40);
+  cmd->countl = (uint8_t)n_sectors;
+  cmd->counth = (uint8_t)(n_sectors >> 8);
+  send_cmd(main_drive, cmdslot);
+
+  return 0;
+}
+
 
 void
 ahci_init(void)

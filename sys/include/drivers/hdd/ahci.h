@@ -125,7 +125,7 @@ typedef struct
   HBA_PRDT_ENTRY prdt[1];
 } HBA_CMD_TBL;
 
-
+int ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors);
 void ahci_init(void);
 
 #endif
