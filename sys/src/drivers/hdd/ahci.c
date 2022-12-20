@@ -130,10 +130,10 @@ static void
 send_cmd(HBA_PORT* port, uint32_t slot) 
 {
   while ((port->tfd & 0x88) != 0);
-  port->cmd &= ~(1 << 0);
+  port->cmd &= ~(HBA_PxCMD_ST);
   while ((port->cmd & HBA_PxCMD_CR) != 0);
 
-  port->cmd |= HBA_PxCMD_FR | HBA_PxCMD_ST;
+  port->cmd |= HBA_PxCMD_FRE | HBA_PxCMD_ST;
   port->ci = 1 << slot;
 
   while (port->ci & (1 << slot) != 0);
@@ -515,6 +515,7 @@ prep_rw_op(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors, int cmdslot, uin
   cmdtbl->prdt[0].dba = (uint32_t)buf;
   cmdtbl->prdt[0].dbau = (uint32_t)(buf >> 32);
   cmdtbl->prdt[0].dbc = (n_sectors*512)-1;
+  cmdtbl->prdt[0].i = 0;
   
   FIS_REG_H2D* cmd = (FIS_REG_H2D*)cmdtbl->cfis;
   cmd->fis_type = FIS_TYPE_REG_H2D;
