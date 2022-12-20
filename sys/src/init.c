@@ -14,6 +14,7 @@
 #include <drivers/hdd/ahci.h>
 #include <fs/vfs.h>
 #include <fs/devfs.h>
+#include <fs/ext2.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -38,10 +39,17 @@ init_drivers(void)
 
 
 static void
-fs_init(void)
+pre_fs_init(void)
 {
   vfs_init();
   devfs_init();
+}
+
+
+static void
+post_fs_init(void)
+{
+  ext2_init();
 }
 
 _noreturn void
@@ -56,11 +64,9 @@ _start(void)
 #endif
   
   acpi_init();
-  fs_init();
+  pre_fs_init();
   init_drivers();
-  
-  FILE* fp = fopen("/dev/sda", "r");
-  fclose(fp);
+  post_fs_init(); 
 
   asmv("cli; hlt");
   __builtin_unreachable();
