@@ -57,8 +57,14 @@ open(vfs_node_t* node)
   printk("/dev/sda has been opened!\n");
 }
 
+static void
+close(vfs_node_t* node)
+{
+}
+
 static fops_t fops = {
-  .open = open
+  .open = open,
+  .close = close,
 };
 
 
