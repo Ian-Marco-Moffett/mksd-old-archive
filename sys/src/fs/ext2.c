@@ -35,7 +35,7 @@ dump_fsinfo(void)
 {
   printk(PRINTK_INFO "EXT2: Total inodes: %d\n", superblock->total_inodes);
   printk(PRINTK_INFO "EXT2: Total blocks: %d\n", superblock->total_blocks);
-  printk(PRINTK_INFO "EXT2: Filesystem created by a %s system.",
+  printk(PRINTK_INFO "EXT2: Filesystem created by a %s system.\n",
          fscreators[superblock->os_id]);
 }
 
