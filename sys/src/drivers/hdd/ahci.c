@@ -493,7 +493,8 @@ init_ports(void)
 
 
 static void
-prep_rw_op(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors, int cmdslot, uint8_t write)
+prep_rw_op(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors,
+           int cmdslot, uint8_t write)
 {
   /* Build a command header */
   uint64_t clb = ((uint64_t)main_drive->clbu << 32 | main_drive->clb);
