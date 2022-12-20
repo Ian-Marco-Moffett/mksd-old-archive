@@ -190,7 +190,7 @@ strappend(char* str1, const char* str2)
   size_t str2_len = strlen(str2);
   size_t str2_idx = 0;
   size_t i;
-  for (i = str1_len; i < str1_len+str2_len; ++i)
+  for (i = str1_len; i < str1_len+str2_len+1; ++i)
   {
     str1[i] = str2[str2_idx++];
   }
@@ -253,6 +253,48 @@ strsplit(const char* str, char dilm, size_t idx)
   }
 
   return split;
+}
+
+
+void 
+snprintf(char* str, size_t size, const char* fmt, ...)
+{
+  va_list ap;
+  va_start(ap, fmt);
+
+  size_t i = 0;
+  for (const char* ptr = fmt; *ptr; ++ptr)
+  {
+    if (i >= size-1)
+    {
+      return;
+    }
+
+    if (*ptr == '%')
+    {
+      ++ptr;
+
+      switch (*ptr)
+      {
+        case 'd':
+          {
+            char* strdec = dec2str(va_arg(ap, uint64_t));
+            for (size_t j = 0; j < strlen(strdec); ++j)
+            {
+              str[i++] = strdec[j];
+            }
+          }
+
+          // TODO: Add more formatters.
+      }
+    }
+    else
+    {
+      str[i++] = *ptr;
+    }
+  }
+
+  str[i] = '\0';
 }
 
 #endif

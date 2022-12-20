@@ -2,6 +2,7 @@
 #define STRING_H_
 
 #include <lib/types.h>
+#include <stdarg.h>
 
 
 #if defined(__x86_64__)
@@ -16,6 +17,7 @@ size_t strlen(const char* str);
 size_t strdilm_count(const char* str, char dilm);
 uint8_t strcmp(const char* str1, const char* str2);
 uint8_t memcmp(const char* str1, const char* str2, size_t n);
+void snprintf(char* str, size_t size, const char* fmt, ...);
 #endif  // __x86_64__
 
 
