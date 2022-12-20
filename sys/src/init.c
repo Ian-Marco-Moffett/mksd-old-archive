@@ -44,16 +44,6 @@ fs_init(void)
   devfs_init();
 }
 
-static void
-open(vfs_node_t* node)
-{
-  printk(PRINTK_INFO "TEST: /dev/test has been opened!\n");
-}
-
-static fops_t fops = {
-  .open = open
-};
-
 _noreturn void
 _start(void) 
 {
@@ -68,8 +58,9 @@ _start(void)
   acpi_init();
   fs_init();
   init_drivers();
-  devfs_register_device("test", &fops);
-  FILE* fp = fopen("/dev/test", "r");
+  
+  FILE* fp = fopen("/dev/sda", "r");
+
   asmv("cli; hlt");
   __builtin_unreachable();
 }
