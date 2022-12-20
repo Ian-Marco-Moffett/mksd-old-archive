@@ -13,6 +13,7 @@
 #include <acpi/acpi.h>
 #include <drivers/hdd/ahci.h>
 #include <fs/vfs.h>
+#include <fs/devfs.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -40,8 +41,18 @@ static void
 fs_init(void)
 {
   vfs_init();
+  devfs_init();
 }
 
+static void
+open(vfs_node_t* node)
+{
+  printk(PRINTK_INFO "TEST: /dev/test has been opened!\n");
+}
+
+static fops_t fops = {
+  .open = open
+};
 
 _noreturn void
 _start(void) 
@@ -57,6 +68,8 @@ _start(void)
   acpi_init();
   fs_init();
   init_drivers();
+  devfs_register_device("test", &fops);
+  FILE* fp = fopen("/dev/test", "r");
   asmv("cli; hlt");
   __builtin_unreachable();
 }
