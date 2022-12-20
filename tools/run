@@ -3,7 +3,7 @@
 if [ ! -f sbin/diskimg.img ]
 then
   mkdir -p sbin/
-  qemu-img create -f qcow2 sbin/diskimg.img 5M
+  qemu-img create sbin/diskimg.img 10M
 fi
 
 QEMU_ARGS="--enable-kvm -serial stdio -cpu qemu64 -M q35 -m 256M -boot d -smp 2 \
