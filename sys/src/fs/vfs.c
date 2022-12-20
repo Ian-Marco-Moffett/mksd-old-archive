@@ -83,6 +83,12 @@ fopen(const char* path, const char* mode)
   }
 
   vfs_node_t* node = vfs_path_to_node(path);
+
+  if (node == NULL)
+  {
+    return NULL;
+  }
+
   node->fops->open(node);
   
   FILE* fp = kmalloc(sizeof(FILE));
