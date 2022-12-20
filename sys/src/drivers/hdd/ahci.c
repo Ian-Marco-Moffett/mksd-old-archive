@@ -548,6 +548,21 @@ ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
 }
 
 
+int 
+ahci_read_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors)
+{
+  int cmdslot = find_cmdslot(main_drive);
+  if (cmdslot == -1)
+  {
+    return 1;
+  }
+
+  prep_rw_op(lba, buf_phys, n_sectors, cmdslot, 0);
+  send_cmd(main_drive, cmdslot);
+  return 0;
+}
+
+
 void
 ahci_init(void)
 {

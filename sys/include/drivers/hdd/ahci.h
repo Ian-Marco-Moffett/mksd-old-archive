@@ -126,6 +126,7 @@ typedef struct
 } HBA_CMD_TBL;
 
 int ahci_write_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors);
+int ahci_read_drive(uint64_t lba, uint16_t* buf_phys, uint8_t n_sectors);
 void ahci_init(void);
 
 #endif
