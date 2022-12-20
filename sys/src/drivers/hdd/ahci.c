@@ -14,6 +14,7 @@
 #include <mm/pmm.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
+#include <fs/devfs.h>
 
 #define CLASS_ID    0x1
 #define SUBCLASS_ID 0x6
@@ -47,6 +48,17 @@ static pci_device_t* dev = NULL;
 static size_t n_hba_ports = 0;
 static size_t n_cmdslots = 0;
 static volatile HBA_MEM* abar = NULL;
+
+
+static void
+open(vfs_node_t* node)
+{
+  printk("/dev/sda has been opened!\n");
+}
+
+static fops_t fops = {
+  .open = open
+};
 
 
 static int 
@@ -436,6 +448,8 @@ static void
 init_ports(void)
 {
   uint32_t pi = abar->pi;
+  size_t drive_count = 0;
+  char* drive_id = kmalloc(sizeof(char) * (23));
 
   for (uint32_t i = 0; i < 32; ++i)
   {
@@ -449,10 +463,26 @@ init_ports(void)
           init_port_single(&abar->ports[i]);
           printk(PRINTK_INFO "AHCI: Port %d initialized "
                              "successfully!\n", i); 
+
+          if (drive_count == 0)
+          {
+            devfs_register_device("sda", &fops);
+          }
+          else
+          {
+            snprintf(drive_id, 23, "sda%d", drive_count);
+            devfs_register_device(drive_id, &fops);
+          }
+
+          
+          ++drive_count;
+          memzero(drive_id, 23);
           break;
       }
     }
   }
+
+  kfree(drive_id);
 }
 
 void
