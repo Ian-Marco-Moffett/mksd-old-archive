@@ -54,12 +54,13 @@ static volatile HBA_PORT* main_drive = NULL;
 static void
 open(vfs_node_t* node)
 {
-  printk("/dev/sda has been opened!\n");
+  /* Do nothing (for now) */
 }
 
 static void
 close(vfs_node_t* node)
 {
+  /* Do nothing (for now) */
 }
 
 static fops_t fops = {
