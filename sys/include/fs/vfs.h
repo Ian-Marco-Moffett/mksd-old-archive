@@ -18,6 +18,7 @@ struct VFSNode;
 typedef struct
 {
   void(*open)(struct VFSNode* node);
+  void(*close)(struct VFSNode* node);
 } fops_t;
 
 typedef struct VFSNode
@@ -42,6 +43,7 @@ void vfs_make_node(const char* name, vfs_node_t* parent,
                    fops_t* fops);
 
 FILE* fopen(const char* path, const char* mode);
+void fclose(FILE* fp);
 
 
 extern vfs_node_t* g_rootfs;

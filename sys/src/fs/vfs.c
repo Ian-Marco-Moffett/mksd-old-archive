@@ -97,6 +97,14 @@ fopen(const char* path, const char* mode)
   return fp;
 }
 
+
+void 
+fclose(FILE* fp)
+{
+  fp->node->fops->close(fp->node);
+  kfree(fp);
+}
+
 void 
 vfs_init(void)
 {
