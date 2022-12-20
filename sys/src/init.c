@@ -60,6 +60,7 @@ _start(void)
   init_drivers();
   
   FILE* fp = fopen("/dev/sda", "r");
+  fclose(fp);
 
   asmv("cli; hlt");
   __builtin_unreachable();
