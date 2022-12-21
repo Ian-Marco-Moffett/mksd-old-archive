@@ -28,6 +28,7 @@ typedef struct
 } _packed idtr_t;
 
 void register_exception_handler(uint8_t vector, void(*isr)(void* stackframe));
+void register_interrupt(uint8_t vector, void(*isr)(void* stackframe));
 void load_idt(void);
 
 #endif    // __x86_64__

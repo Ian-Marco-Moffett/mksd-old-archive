@@ -43,6 +43,12 @@ register_exception_handler(uint8_t vector, void(*isr)(void* stackframe))
 }
 
 void 
+register_interrupt(uint8_t vector, void(*isr)(void* stackframe))
+{
+  set_desc(vector, isr, INT_GATE_FLAGS);
+}
+
+void 
 load_idt(void) 
 {
   asmv("lidt %0" :: "m" (idtr));
