@@ -36,7 +36,7 @@ arp_resolve(ipv4_address_t target_paddr)
                 (uint8_t*)packet, sizeof(arp_packet_t)); 
 
   kfree(packet);
-  ssize_t spin = 10000000;
+  ssize_t spin = 10000000000;
 
   while (!(rtl8139_got_packet()) && spin--);
   if (spin <= 0) return NULL;
