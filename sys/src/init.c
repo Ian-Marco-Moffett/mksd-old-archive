@@ -15,6 +15,8 @@
 #include <fs/vfs.h>
 #include <fs/devfs.h>
 #include <fs/ext2.h>
+#include <arch/x64/lapic.h>
+#include <arch/x64/ioapic.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -67,6 +69,11 @@ _start(void)
   pre_fs_init();
   init_drivers();
   post_fs_init(); 
+
+  lapic_init();
+  printk(PRINTK_INFO "Local APIC initialized for the BSP.\n");
+  ioapic_init();
+  printk(PRINTK_INFO "I/O APIC initialized.\n");
 
   asmv("cli; hlt");
   __builtin_unreachable();
