@@ -6,6 +6,8 @@
 
 
 #include <arch/x64/idt.h>
+#include <arch/x64/ioapic.h>
+#include <acpi/acpi.h>
 
 #define TRAP_GATE_FLAGS 0x8F
 #define INT_GATE_FLAGS 0x8E
@@ -46,6 +48,13 @@ void
 register_interrupt(uint8_t vector, void(*isr)(void* stackframe))
 {
   set_desc(vector, isr, INT_GATE_FLAGS);
+}
+
+void 
+register_irq(uint8_t irq, void(*isr)(void* stackframe))
+{
+  set_desc(0x20+irq, isr, INT_GATE_FLAGS);
+  ioapic_set_entry(acpi_remap_irq(irq), (0x20 + irq));
 }
 
 void 

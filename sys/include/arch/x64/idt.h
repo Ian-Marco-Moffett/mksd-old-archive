@@ -29,6 +29,7 @@ typedef struct
 
 void register_exception_handler(uint8_t vector, void(*isr)(void* stackframe));
 void register_interrupt(uint8_t vector, void(*isr)(void* stackframe));
+void register_irq(uint8_t irq, void(*isr)(void* stackframe));
 void load_idt(void);
 
 #endif    // __x86_64__
