@@ -1,3 +1,10 @@
+/*
+ *  Description: RTL8139 NIC driver.
+ *  Author(s): Ian Marco Moffett.
+ *
+ */
+
+
 #include <drivers/net/rtl8139.h>
 #include <arch/bus/pci.h>
 #include <arch/x64/io.h>
