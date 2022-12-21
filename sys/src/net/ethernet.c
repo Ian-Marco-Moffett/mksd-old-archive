@@ -20,8 +20,10 @@ ethernet_send(mac_address_t dest, ethertype_t ethertype, uint8_t* data, unsigned
     memset(hdr->dest, 0xFF, sizeof(mac_address_t));
   }
 
+  memcpy(hdr->src, g_rtl8139_mac_addr, sizeof(mac_address_t));
+
   hdr->ether_type = BIG_ENDIAN(ethertype);
-  memcpy(hdr->payload, data, length);
+  memcpy((void*)((uintptr_t)hdr + sizeof(ethernet_header_t)), data, length);
   rtl8139_send_packet(hdr, size);
   kfree(hdr);
 }

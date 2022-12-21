@@ -2,6 +2,7 @@
 #define NET_ETHERNET_H_
 
 #include <lib/types.h>
+#include <lib/asm.h>
 
 typedef uint8_t mac_address_t[6];
 
@@ -18,8 +19,7 @@ typedef struct
   mac_address_t dest;
   mac_address_t src;
   uint16_t ether_type;
-  uint8_t payload[1];
-} ethernet_header_t;
+} _packed ethernet_header_t;
 
 void ethernet_send(mac_address_t dest, ethertype_t ethertype, uint8_t* data, unsigned int length);
 
