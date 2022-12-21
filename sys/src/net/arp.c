@@ -48,7 +48,8 @@ arp_resolve(ipv4_address_t target_paddr)
   {
     if (ARP_DEBUG)
     {
-      printk(PRINTK_INFO "ARP: Got reply; %d.%d.%d.%d is at %X:%X:%X:%X:%X:%X.\n",
+      printk(PRINTK_INFO 
+             "ARP: Got reply; %d.%d.%d.%d is at %X:%X:%X:%X:%X:%X.\n",
              (pkt->sender_paddr >> 0) & 0xFF, 
              (pkt->sender_paddr >> 8) & 0xFF, 
              (pkt->sender_paddr >> 16) & 0xFF, 
