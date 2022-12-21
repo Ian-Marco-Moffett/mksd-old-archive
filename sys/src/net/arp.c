@@ -20,7 +20,7 @@ arp_resolve(ipv4_address_t target_paddr)
   packet->paddr_len = sizeof(ipv4_address_t);
   packet->op = BIG_ENDIAN(ARP_OP_REQUEST);
 
-  /* Target haddr shall be broadcast (0xFF:FF:FF:FF:FF:FF) */
+  /* Target haddr shall be broadcast (FF:FF:FF:FF:FF:FF) */
   memset(packet->target_haddr, 0xFF, sizeof(mac_address_t));
   packet->sender_paddr = IPv4(0, 0, 0, 0);
 
