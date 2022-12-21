@@ -41,7 +41,9 @@ arp_resolve(ipv4_address_t target_paddr)
   while (!(rtl8139_got_packet()) && spin--);
   if (spin <= 0) return NULL;
 
-  arp_packet_t* pkt = (arp_packet_t*)((uintptr_t)rtl8139_read_packet() + sizeof(ethernet_header_t));      /* skip ethernet header */
+  /* Skip ethernet header */
+  arp_packet_t* pkt = (arp_packet_t*)((uintptr_t)rtl8139_read_packet()
+                                      + sizeof(ethernet_header_t));
   if (pkt->op == BIG_ENDIAN(ARP_OP_REPLY))
   {
     if (ARP_DEBUG)
