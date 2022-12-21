@@ -131,7 +131,7 @@
 #define DEVICE_ID 0x8139
 
 static size_t next_txbuf = 0;
-static uintptr_t txbufs[TX_BUFFER_COUNT];
+static uint8_t txbufs[TX_BUFFER_COUNT];
 static pci_device_t* dev = NULL;
 static uint32_t iobase = 0;
 static void* rxbuf = NULL;
@@ -391,6 +391,8 @@ rtl8139_init(void)
   {
     txbufs[i] = pmm_alloc(1);
   }
+
+  outb(iobase + REG_CFG9346, CFG9346_NONE);
 
   outw(iobase + REG_IMR, INT_RXOK
                          | INT_RXERR

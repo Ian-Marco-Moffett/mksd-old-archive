@@ -6,4 +6,6 @@
 void rtl8139_init(void);
 void rtl8139_send_packet(void* data, size_t size);
 
+extern mac_address_t g_rtl8139_mac_addr;
+
 #endif
