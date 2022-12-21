@@ -129,6 +129,7 @@
 
 #define VENDOR_ID 0x10EC
 #define DEVICE_ID 0x8139
+
 static size_t next_txbuf = 0;
 static uintptr_t txbufs[TX_BUFFER_COUNT];
 static pci_device_t* dev = NULL;
