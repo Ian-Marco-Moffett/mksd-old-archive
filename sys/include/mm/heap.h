@@ -3,7 +3,7 @@
 
 #include <lib/types.h>
 
-#define HEAP_SIZE_PAGES 10
+#define HEAP_SIZE_PAGES 15
 
 
 void* kmalloc(size_t n_bytes);
