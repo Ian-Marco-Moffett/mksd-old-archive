@@ -8,6 +8,7 @@
 #include <net/ip.h>
 #include <net/arp.h>
 #include <net/ethernet.h>
+#include <net/checksum.h>
 #include <mm/heap.h>
 #include <lib/log.h>
 #include <lib/math.h>
@@ -16,38 +17,6 @@
 #define IP_DEBUG      1
 #define VERSION_4     4
 #define HDR_LEN       5
-
-static uint16_t 
-convert(uint16_t os) 
-{
-  uint8_t* s = (uint8_t*)&os;
-  return (uint16_t)(s[0] << 8 | s[1]);
-}
-
-static uint16_t 
-internet_checksum(void* ptr, size_t count) 
-{
-  uint32_t checksum = 0;
-  uint16_t* w = (uint16_t*)ptr;
-
-  while (count > 1) 
-  {
-      checksum += convert(*w++);
-
-      if (checksum & 0x80000000)
-      {
-        checksum = (checksum & 0xffff) | (checksum >> 16);
-      }
-
-      count -= 2;
-  }
-
-  while (checksum >> 16)
-  {
-    checksum = (checksum & 0xffff) + (checksum >> 16);
-  }
-  return convert(~checksum);
-}
 
 void 
 ipv4_send(ipv4_address_t dest, ip_protocol_t protocol, 
