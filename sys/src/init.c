@@ -12,6 +12,7 @@
 #include <mm/pmm.h>
 #include <acpi/acpi.h>
 #include <drivers/hdd/ahci.h>
+#include <drivers/net/rtl8139.h>
 #include <fs/vfs.h>
 #include <fs/devfs.h>
 #include <fs/ext2.h>
@@ -54,6 +55,12 @@ post_fs_init(void)
   ext2_init();
 }
 
+static void
+net_init(void)
+{
+  rtl8139_init();
+}
+
 _noreturn void
 _start(void) 
 {
@@ -74,6 +81,8 @@ _start(void)
   printk(PRINTK_INFO "Local APIC initialized for the BSP.\n");
   ioapic_init();
   printk(PRINTK_INFO "I/O APIC initialized.\n");
+
+  net_init();
 
   asmv("cli; hlt");
   __builtin_unreachable();
