@@ -1,3 +1,10 @@
+/*
+ *  Description: Ethernet physical layer implementation.
+ *  Author(s): Ian Marco Moffett
+ *
+ */
+
+
 #include <net/ethernet.h>
 #include <mm/heap.h>
 #include <lib/string.h>

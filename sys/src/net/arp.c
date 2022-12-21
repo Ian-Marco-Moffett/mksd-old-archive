@@ -1,3 +1,9 @@
+/*
+ *  Description: ARP implementation.
+ *  Author(s): Ian Marco Moffett
+ */
+
+
 #include <net/arp.h>
 #include <drivers/net/rtl8139.h>
 #include <mm/heap.h>

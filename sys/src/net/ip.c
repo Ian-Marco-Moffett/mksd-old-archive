@@ -1,3 +1,10 @@
+/*
+ *  Description: Internet protocol implementation.
+ *  Author(s): Ian Marco Moffett
+ *
+ */
+
+
 #include <net/ip.h>
 #include <net/arp.h>
 #include <net/ethernet.h>
