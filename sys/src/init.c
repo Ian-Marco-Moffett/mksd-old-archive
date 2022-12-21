@@ -83,7 +83,10 @@ _start(void)
   printk(PRINTK_INFO "I/O APIC initialized.\n");
 
   net_init();
-
-  asmv("cli; hlt");
+  
+  while (1)
+  {
+    asmv("hlt");
+  }
   __builtin_unreachable();
 }

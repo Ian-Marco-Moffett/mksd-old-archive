@@ -8,9 +8,16 @@
 #include <drivers/net/rtl8139.h>
 #include <arch/bus/pci.h>
 #include <arch/x64/io.h>
+#include <arch/x64/idt.h>
+#include <arch/x64/lapic.h>
 #include <mm/vmm.h>
 #include <mm/heap.h>
+#include <mm/pmm.h>
 #include <lib/log.h>
+#include <lib/asm.h>
+#include <lib/string.h>
+
+#define RTL8139_DEBUG 1
 
 /* Packets */
 #define PACKET_SIZE_MAX 0x600
@@ -127,6 +134,8 @@ static uintptr_t txbufs[TX_BUFFER_COUNT];
 static pci_device_t* dev = NULL;
 static uint32_t iobase = 0;
 static void* rxbuf = NULL;
+static off_t rxbuf_off = 0;
+static void* packet_buf = NULL;
 
 mac_address_t g_rtl8139_mac_addr;
 
@@ -146,6 +155,126 @@ update_mac_addr(void) {
   for (unsigned int i = 0; i < 6; ++i) {
     g_rtl8139_mac_addr[i] = inb(iobase + REG_MAC + i);
   }
+}
+
+static void
+recieve_packet(void)
+{
+  uint8_t* packet = (uint8_t*)((uint64_t)rxbuf + rxbuf_off);
+  uint16_t status = *(uint16_t*)(packet + 0);
+  uint16_t length = *(uint16_t*)(packet + 2);
+
+  const uint8_t IS_BAD_PACKET =
+                !(status & RX_OK) 
+                || (status & (RX_INVALID_SYMBOL_ERROR 
+                              | RX_CRC_ERROR 
+                              | RX_FRAME_ALIGNMENT_ERROR)) 
+                || (length >= PACKET_SIZE_MAX) 
+                || (length < PACKET_SIZE_MIN);
+
+  if (IS_BAD_PACKET && RTL8139_DEBUG)
+  {
+    printk(PRINTK_WARN "RTL8139: Got bad packet (status=%x, length=%x)\n", 
+           status, length);
+
+    if (status & RX_INVALID_SYMBOL_ERROR)
+    {
+      printk(PRINTK_WARN "RTL8139: Invalid symbol.\n");
+    }
+
+    if (status & RX_CRC_ERROR)
+    {
+      printk(PRINTK_WARN "RTL8139: CRC error.\n");
+    }
+
+    if (status & RX_FRAME_ALIGNMENT_ERROR)
+    {
+      printk(PRINTK_WARN "RTL8139: Frame alignment error.\n");
+    }
+
+    if (length >= PACKET_SIZE_MAX)
+    {
+      printk(PRINTK_WARN "RTL8139: Packet size too long!\n");
+    }
+
+    if (length < PACKET_SIZE_MIN)
+    {
+      printk(PRINTK_WARN "RTL8139: Packet size too small!\n");
+    }
+
+    return;
+  }
+  
+  memcpy(packet_buf, (uint8_t*)((uintptr_t)packet + 4), length - 4);
+  rxbuf_off = ((rxbuf_off + length + 4 + 3) & ~3) % RX_BUFFER_SIZE;
+  outw(iobase + REG_CAPR, rxbuf_off - 0x10);
+  rxbuf_off %= RX_BUFFER_SIZE;
+
+  if (RTL8139_DEBUG)
+  {
+    printk(PRINTK_INFO "RTL8139(DEBUG): Recieved %d bytes of data.\n", length);
+  }
+}
+
+_isr static void
+rtl8139_isr(void* stackframe)
+{
+  asmv("cli");
+  while (1)
+  {
+    uint16_t status = inw(iobase + REG_ISR);
+    outw(iobase + REG_ISR, status);
+    const size_t STAT = INT_RXOK 
+                       | INT_RXERR 
+                       | INT_TXOK 
+                       | INT_TXERR 
+                       | INT_RX_BUFFER_OVERFLOW 
+                       | INT_LINK_CHANGE 
+                       | INT_RX_FIFO_OVERFLOW 
+                       | INT_LENGTH_CHANGE 
+                       | INT_SYSTEM_ERROR;
+
+    if (!(status & STAT))
+    {
+      break;
+    }
+
+    if ((status & INT_TXOK) && RTL8139_DEBUG)
+    {
+      printk(PRINTK_INFO "RTL8139: TX complete.\n");
+    }
+
+    if ((status & INT_TXERR) && RTL8139_DEBUG)
+    {
+      printk(PRINTK_WARN "RTL8139: TX error.\n");
+    }
+
+    if (status & INT_RXOK && RTL8139_DEBUG)
+    {
+      printk(PRINTK_INFO "RTL8139(DEBUG): Recieved packet!\n");
+      recieve_packet();
+    }
+
+    if (status & INT_RXERR && RTL8139_DEBUG)
+    {
+      printk(PRINTK_WARN "RTL8139: RX error.\n");
+    }
+
+    if (status & INT_RX_BUFFER_OVERFLOW && RTL8139_DEBUG)
+    {
+      printk(PRINTK_WARN "RTL8139: RX buffer overflow.\n");
+    }
+
+    if (status & INT_LINK_CHANGE && RTL8139_DEBUG)
+    {
+      printk(PRINTK_INFO "RTL8139(DEBUG): Link status has changed, "
+                         "STATE=%s\n", is_link_up() ? "UP" : "DOWN");
+    }
+  }
+
+  outw(iobase + REG_ISR, 0x5);
+  lapic_send_eoi();
+  asmv("sti");
 }
 
 void 
@@ -186,7 +315,7 @@ rtl8139_init(void)
   outl(iobase + REG_CONFIG1, 0);
 
   /* Allocate memory for the RX buffer */
-  rxbuf = kmalloc(RX_BUFFER_SIZE);
+  rxbuf = (void*)((uintptr_t)pmm_alloc(RX_BUFFER_SIZE/4096) + VMM_HIGHER_HALF);
 
   /* 
    * Set the RX buffer to the physical address
@@ -257,4 +386,8 @@ rtl8139_init(void)
       g_rtl8139_mac_addr[3], 
       g_rtl8139_mac_addr[4], 
       g_rtl8139_mac_addr[5]);
+
+  packet_buf = kmalloc(PACKET_SIZE_MAX);
+  register_irq(dev->irq_line, rtl8139_isr);
+  asmv("sti");
 }
