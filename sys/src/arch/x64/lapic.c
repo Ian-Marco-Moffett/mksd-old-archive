@@ -75,6 +75,12 @@ read_mmio(uint16_t reg)
 }
 
 void 
+lapic_send_eoi(void) 
+{
+  write_mmio(LAPIC_EOI, 0);
+}
+
+void 
 lapic_init(void)
 {
   /* Use flat model */
