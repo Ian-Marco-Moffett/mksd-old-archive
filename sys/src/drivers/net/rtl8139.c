@@ -135,6 +135,7 @@ static uint8_t txbufs[TX_BUFFER_COUNT];
 static pci_device_t* dev = NULL;
 static uint32_t iobase = 0;
 static void* rxbuf = NULL;
+static uint8_t got_packet = 0;
 static off_t rxbuf_off = 0;
 static void* packet_buf = NULL;
 
@@ -206,11 +207,15 @@ recieve_packet(void)
     return;
   }
   
-  memcpy(packet_buf, (uint8_t*)((uintptr_t)packet + 4), length - 4);
+  if (!(got_packet))
+  {
+    memcpy(packet_buf, (uint8_t*)((uintptr_t)packet + 4), length - 4);
+  }
   rxbuf_off = ((rxbuf_off + length + 4 + 3) & ~3) % RX_BUFFER_SIZE;
   outw(iobase + REG_CAPR, rxbuf_off - 0x10);
   rxbuf_off %= RX_BUFFER_SIZE;
 
+  got_packet = 1;
   if (RTL8139_DEBUG)
   {
     printk(PRINTK_INFO "RTL8139(DEBUG): Recieved %d bytes of data.\n", length);
@@ -220,6 +225,7 @@ recieve_packet(void)
 _isr static void
 rtl8139_isr(void* stackframe)
 {
+
   asmv("cli");
   while (1)
   {
@@ -309,6 +315,26 @@ rtl8139_send_packet(void* data, size_t size)
   memzero((void*)virt_addr, TX_BUFFER_SIZE - size);
   memcpy((void*)virt_addr, data, size);
   outl(iobase + REG_TXSTATUS0 + (hwbuf * 4), size);
+}
+
+
+uint8_t
+rtl8139_got_packet(void)
+{
+  if (!(got_packet))
+  {
+    return 0;
+  }
+
+  return 1;
+}
+
+
+uint8_t*
+rtl8139_read_packet(void)
+{
+  got_packet = 0;
+  return packet_buf;
 }
 
 void 

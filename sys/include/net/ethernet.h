@@ -8,9 +8,9 @@ typedef uint8_t mac_address_t[6];
 
 typedef enum
 {
-  ETHERNET_ARP  = 0x0806,
-  ETHERNET_IPV4 = 0x0800,
-  ETHERNET_IPV6 = 0x86DD
+  ETHERTYPE_ARP  = 0x0806,
+  ETHERTYPE_IPV4 = 0x0800,
+  ETHERTYPE_IPV6 = 0x86DD
 } ethertype_t;
 
 
