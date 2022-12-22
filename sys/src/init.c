@@ -85,7 +85,7 @@ _start(void)
   printk(PRINTK_INFO "I/O APIC initialized.\n");
 
   init_pit();
-  mask_irq(0);
+  lapic_timer_calibrate();
   net_init();
   
   while (1)
