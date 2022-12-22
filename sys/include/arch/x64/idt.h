@@ -31,6 +31,7 @@ void register_exception_handler(uint8_t vector, void(*isr)(void* stackframe));
 void register_interrupt(uint8_t vector, void(*isr)(void* stackframe));
 void register_irq(uint8_t irq, void(*isr)(void* stackframe));
 void load_idt(void);
+int alloc_idt_vector(void);
 
 #endif    // __x86_64__
 #endif    // IDT_H_

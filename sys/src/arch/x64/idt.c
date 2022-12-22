@@ -63,4 +63,12 @@ load_idt(void)
   asmv("lidt %0" :: "m" (idtr));
 }
 
+
+int
+alloc_idt_vector(void)
+{
+  static uint8_t vec = 0x81;
+  return vec < 255 ? vec++ : -1;
+}
+
 #endif  // __x86_64__
