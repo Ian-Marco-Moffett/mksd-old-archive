@@ -57,6 +57,15 @@ kmalloc(size_t n_bytes)
   return (void*)((uintptr_t)next - n_bytes);
 }
 
+
+void*
+kcalloc(size_t nmemb, size_t size)
+{
+  void* block = kmalloc(nmemb * size);
+  memzero(block, nmemb * size);
+  return block;
+}
+
 void 
 kfree(void* ptr) 
 {

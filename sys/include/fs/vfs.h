@@ -24,7 +24,7 @@ typedef struct
 typedef struct VFSNode
 {
   char name[256];
-  hashmap_t* children;
+  struct hashmap_s children;
   size_t n_children;
   file_flag_t flags;
   fops_t* fops;

@@ -77,15 +77,15 @@ _start(void)
   acpi_init();
   pre_fs_init();
   init_drivers();
-  post_fs_init(); 
+  post_fs_init();
 
   lapic_init();
   printk(PRINTK_INFO "Local APIC initialized for the BSP.\n");
   ioapic_init();
   printk(PRINTK_INFO "I/O APIC initialized.\n");
 
-  init_pit();
-  lapic_timer_calibrate();
+  // init_pit();
+  // lapic_timer_calibrate();
   net_init();
   
   while (1)

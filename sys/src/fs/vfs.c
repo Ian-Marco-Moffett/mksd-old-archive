@@ -34,7 +34,7 @@ vfs_path_to_node(const char* path)
   for (size_t i = 0; i < dilm_count; ++i)
   {
     char* split = strsplit(path, '/', i);
-    last_node = hashmap_read(last_node->children, split);
+    last_node = hashmap_get(&last_node->children, split, strlen(split));
     kfree(split);
   }
 
@@ -54,17 +54,19 @@ void vfs_make_node(const char* name, vfs_node_t* parent,
                    vfs_node_t** node_out, file_flag_t flags,
                    fops_t* fops)
 {
+
   *node_out = kmalloc(sizeof(vfs_node_t));
   vfs_node_t* new_node = *node_out;
-  memcpy(new_node->name, name, strlen(name));
+  memcpy(new_node->name, name, strlen(name)); 
+
   new_node->n_children = 0;
   new_node->flags = flags;
   new_node->fops = fops;
-  new_node->children = kmalloc(sizeof(hashmap_t));
+  hashmap_create(8, &new_node->children);
 
   if (parent != NULL)
   {
-    hashmap_insert(parent->children, new_node, name);
+    hashmap_put(&parent->children, name, strlen(name), new_node);
     ++parent->n_children;
   }
 }
