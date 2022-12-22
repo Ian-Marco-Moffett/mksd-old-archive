@@ -13,11 +13,13 @@
 #include <acpi/acpi.h>
 #include <drivers/hdd/ahci.h>
 #include <drivers/net/rtl8139.h>
+#include <drivers/timer/pit.h>
 #include <fs/vfs.h>
 #include <fs/devfs.h>
 #include <fs/ext2.h>
 #include <arch/x64/lapic.h>
 #include <arch/x64/ioapic.h>
+#include <intr/irq.h>
 
 #if defined(__x86_64__)
 #include <arch/x64/exceptions.h>
@@ -82,6 +84,8 @@ _start(void)
   ioapic_init();
   printk(PRINTK_INFO "I/O APIC initialized.\n");
 
+  init_pit();
+  mask_irq(0);
   net_init();
   
   while (1)
