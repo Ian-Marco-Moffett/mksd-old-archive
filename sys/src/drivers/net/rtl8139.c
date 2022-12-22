@@ -181,7 +181,6 @@ arp_respond(arp_packet_t* arp_packet)
 static void
 id_packet(void)
 {
-  mask_irq(dev->irq_line);
   ethernet_header_t* hdr = (ethernet_header_t*)packet_buf;
   
   switch (hdr->ether_type)
@@ -195,8 +194,6 @@ id_packet(void)
       }
       break;
   }
-  
-  unmask_irq(dev->irq_line);
 }
 
 static uint8_t
@@ -283,7 +280,6 @@ _isr static void
 rtl8139_isr(void* stackframe)
 {
   
-  mask_irq(dev->irq_line);
   while (1)
   {
     uint16_t status = inw(iobase + REG_ISR);
@@ -338,7 +334,6 @@ rtl8139_isr(void* stackframe)
 
   outw(iobase + REG_ISR, 0x5);
   lapic_send_eoi();
-  unmask_irq(dev->irq_line);
 }
 
 
