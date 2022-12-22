@@ -161,6 +161,7 @@ arp_respond(arp_packet_t* arp_packet)
   packet->haddr_len = sizeof(mac_address_t);
   packet->paddr_len = sizeof(ipv4_address_t);
   packet->op = BIG_ENDIAN(ARP_OP_REPLY);
+  packet->target_paddr = arp_packet->sender_paddr;
   
   /* -----------------*/
   memcpy(packet->target_haddr, arp_packet->sender_haddr,
