@@ -47,3 +47,16 @@ pit_get_count(void)
   uint8_t hi = inb(0x40) << 8;
   return ((uint16_t)hi << 8) | lo;
 }
+
+
+void
+pit_set_freq(size_t freq)
+{
+  size_t divisor = PIT_DIVIDEND / freq;
+  if (PIT_DIVIDEND % freq > freq/2)
+  {
+    ++divisor;
+  }
+  
+  set_pit_count(divisor);
+}
