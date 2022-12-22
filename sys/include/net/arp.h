@@ -6,6 +6,9 @@
 #include <lib/types.h>
 #include <lib/asm.h>
 
+
+#define ARP_HW_ETHERNET 1
+
 #define ARP_OP_REQUEST 1
 #define ARP_OP_REPLY 2
 

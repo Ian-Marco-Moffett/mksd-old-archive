@@ -16,6 +16,10 @@
 #include <lib/log.h>
 #include <lib/asm.h>
 #include <lib/string.h>
+#include <lib/math.h>
+#include <net/ip.h>
+#include <net/icmp.h>
+#include <net/arp.h>
 
 #define RTL8139_DEBUG 1
 
@@ -141,6 +145,58 @@ static void* packet_buf = NULL;
 
 mac_address_t g_rtl8139_mac_addr;
 
+static void
+arp_respond(arp_packet_t* arp_packet)
+{
+  if (RTL8139_DEBUG)
+  {
+    printk(PRINTK_INFO "Got ARP request, replying..\n");
+  }
+
+  arp_packet_t* packet = kmalloc(sizeof(arp_packet_t));
+  packet->htype = BIG_ENDIAN(ARP_HW_ETHERNET);
+  
+  /* XXX: Possibly update this */
+  packet->ptype = BIG_ENDIAN(ETHERTYPE_IPV4);
+  packet->haddr_len = sizeof(mac_address_t);
+  packet->paddr_len = sizeof(ipv4_address_t);
+  packet->op = BIG_ENDIAN(ARP_OP_REPLY);
+  
+  /* -----------------*/
+  memcpy(packet->target_haddr, arp_packet->sender_haddr,
+         sizeof(mac_address_t));
+
+  packet->sender_paddr = arp_packet->target_paddr;
+  memcpy(packet->sender_haddr, g_rtl8139_mac_addr, sizeof(mac_address_t));
+  ethernet_send(packet->target_haddr, ETHERTYPE_ARP,
+                (uint8_t*)packet, sizeof(arp_packet_t));
+}
+
+/* 
+ * Identifies a packet and responds 
+ * if needed
+ */
+static void
+id_packet(void)
+{
+  asmv("cli");
+  ethernet_header_t* hdr = (ethernet_header_t*)packet_buf;
+  
+  switch (hdr->ether_type)
+  {
+    case BIG_ENDIAN(ETHERTYPE_ARP):
+      {
+        arp_packet_t* arp_packet =
+          (arp_packet_t*)((uint64_t)hdr + sizeof(ethernet_header_t));
+
+        arp_respond(arp_packet);
+      }
+      break;
+  }
+
+  asmv("sti");
+}
+
 static uint8_t
 is_link_up(void) {
   return ((inb(iobase + REG_MSR) & MSR_LINKB) == 0);
@@ -207,10 +263,7 @@ recieve_packet(void)
     return;
   }
   
-  if (!(got_packet))
-  {
-    memcpy(packet_buf, (uint8_t*)((uintptr_t)packet + 4), length - 4);
-  }
+  memcpy(packet_buf, (uint8_t*)((uintptr_t)packet + 4), length - 4);
   rxbuf_off = ((rxbuf_off + length + 4 + 3) & ~3) % RX_BUFFER_SIZE;
   outw(iobase + REG_CAPR, rxbuf_off - 0x10);
   rxbuf_off %= RX_BUFFER_SIZE;
@@ -220,6 +273,8 @@ recieve_packet(void)
   {
     printk(PRINTK_INFO "RTL8139(DEBUG): Recieved %d bytes of data.\n", length);
   }
+
+  id_packet();
 }
 
 _isr static void
